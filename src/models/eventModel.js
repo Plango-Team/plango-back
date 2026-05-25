@@ -17,7 +17,15 @@ const eventSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ["entertainment", "sports", "educational", "shopping", "other"],
+      enum: [
+        "music",
+        "sports",
+        "education",
+        "technology",
+        "photography",
+        "art",
+        "other",
+      ],
       required: [true, "Category is required"],
     },
     companyId: {
@@ -41,13 +49,13 @@ const eventSchema = new mongoose.Schema(
       type: [String],
       default: ["default-event.jpg"],
     },
-    isPublic: {
-      type: Boolean,
-      default: true,
-    },
     isActive: {
       type: Boolean,
       default: true,
+    },
+    price: {
+      type: Number,
+      min: [0, "Price cannot be negative"],
     },
   },
   {
