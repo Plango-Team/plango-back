@@ -47,6 +47,10 @@ const notificationSchema = new mongoose.Schema(
       type: Date,
     },
 
+    jobId: {
+      type: String,
+    },
+
     data: {
       type: Map,
       of: mongoose.Schema.Types.Mixed,

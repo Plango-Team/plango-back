@@ -415,5 +415,6 @@ module.exports = {
   confirmPhoneChange,
   getProfile,
   deleteAccount,
-  checkUsername
+  checkUsername,
+  updateName,
 };

@@ -9,8 +9,11 @@ const createNotification = async (payload) => {
   const notification = await Notification.create(payload);
   const delay = payload.scheduledFor?  new Date(payload.scheduledFor).getTime() - Date.now() : 0;
 
-  await notificationQueue.add("sendNotification", notification.toObject() , { delay: delay > 0 ? delay : 0 });
-
+  const job = await notificationQueue.add("sendNotification", notification.toObject(), {
+    delay: delay > 0 ? delay : 0,
+  });
+  notification.jobId = job.id;
+  await notification.save();
   return notification;
 };
 

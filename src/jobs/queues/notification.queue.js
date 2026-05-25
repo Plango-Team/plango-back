@@ -21,3 +21,12 @@ const notificationQueue = new Queue("notifications", {
 });
 
 module.exports = notificationQueue;
+
+const removeNotificationJob = async (jobId) => {
+  const job = await notificationQueue.getJob(jobId);
+  if (job) {
+    await job.remove();
+  }
+};
+
+module.exports.removeNotificationJob = removeNotificationJob;
