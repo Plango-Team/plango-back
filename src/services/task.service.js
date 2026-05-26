@@ -1,7 +1,11 @@
 const Task = require("../models/taskModel");
 const Appointment = require("../models/appointmentModel");
 const AppError = require("../utils/appError");
+const createNotification = require("./notification.service").createNotification;
+const Notification = require("../models/notificationModel");
+const notificationQueue = require("../queues/notification.queue");
 const { t } = require("../utils/i18n");
+const { not } = require("joi");
 
 const createTask = async ({ data, userId, lang }) => {
   if (!data) {
@@ -56,6 +60,19 @@ const createTask = async ({ data, userId, lang }) => {
     );
   }
 
+  if(task.deadline){
+    await createNotification({
+      recipientId: userId,
+      type: "task_deadline",
+      title: t(lang, "TASK_REMINDER"),
+      message: t(lang, "TASK_DEADLINE_REMINDER_MESSAGE", { title: task.title }),
+      scheduledFor: task.deadline,
+      data: {
+        taskId: task._id,
+      },
+    });
+  }
+
   return task;
 };
 
@@ -101,6 +118,11 @@ const updateTask = async ({ id, userId, data, lang }) => {
 
     data.deadline = appointment.arrivalTime;
   }
+  const oldTask = await Task.findOne({
+    _id: id,
+    userId,
+  });
+  const oldDeadline = oldTask.deadline?.toISOString();
 
   const task = await Task.findOneAndUpdate(
     {
@@ -117,11 +139,35 @@ const updateTask = async ({ id, userId, data, lang }) => {
   if (!task) {
     throw new AppError(t(lang, "TASK_NOT_FOUND"), 404, "TASK_NOT_FOUND");
   }
+  const newDeadline = task.deadline.toISOString();
 
+  if (oldDeadline && newDeadline && oldDeadline !== newDeadline) {
+    const oldNotification = await Notification.findOne({
+      "data.taskId": id,
+      type: "task_deadline",
+      recipient: userId,
+    });
+    if (oldNotification?.jobId) {
+      await notificationQueue.removeNotificationJob(oldNotification.jobId);
+      await oldNotification.deleteOne();
+    }
+    await createNotification({
+      recipientId: userId,
+      type: "task_deadline",
+      title: t(lang, "TASK_REMINDER"),
+      message: t(lang, "TASK_DEADLINE_REMINDER_MESSAGE", { title: task.title }),
+      scheduledFor: task.deadline,
+      data: {
+        taskId: task._id,
+      },
+    });
+  }
+    
   return task;
 };
 
 const deleteTask = async ({ id, userId, lang }) => {
+
   const task = await Task.findOneAndDelete({
     _id: id,
     userId,
@@ -130,6 +176,17 @@ const deleteTask = async ({ id, userId, lang }) => {
   if (!task) {
     throw new AppError(t(lang, "TASK_NOT_FOUND"), 404, "TASK_NOT_FOUND");
   }
+
+  const notification = await Notification.findOne({
+    "data.taskId": id,
+    type: "task_deadline",
+    recipient: userId,
+  });
+  if (notification?.jobId) {
+    await notificationQueue.removeNotificationJob(notification.jobId);
+    await notification.deleteOne();
+  }
+
 
   return task;
 };

@@ -2,6 +2,8 @@
 // Add a new key to BOTH languages every time you add a message.
 // Supports simple variable interpolation: "Hello {{name}}" → t(lang, 'key', { name: 'Ali' })
 
+const { t } = require("../utils/i18n");
+
 const locales = {
   en: {
     // ── Register ────────────────────────────────────────────
@@ -109,6 +111,12 @@ const locales = {
     PENDING:                    'Pending',
     FOLLOW_REQUEST_SENT:         'Follow request sent.',
     FOLLOW_REQUEST_CANCELLED:      'Follow request canceled',
+    NEW_FOLLOWER:              'New follower',
+    NEW_FOLLOWER_NOTIFICATION : '{{name}} started following you.',
+    NEW_FOLLOW_REQUEST:         'New follow request',
+    NEW_FOLLOW_REQUEST_NOTIFICATION: '{{name}} sent you a follow request.',
+    FOLLOW_REQUEST_ACCEPTED: 'Follow request accepted.',
+    FOLLOW_REQUEST_ACCEPTED_NOTIFICATION: '{{name}} accepted your follow request.',
 
     // ── task subjects ────────────────────────────────────────
     TASK_CREATED:                'Task created successfully.',
@@ -116,6 +124,11 @@ const locales = {
     TASK_DELETED:                'Task deleted successfully.',
     TASK_RETRIEVED:              'Task retrieved successfully.',
     TASK_NOT_FOUND:              'Task not found.',
+    TASK_DEADLINE_APPROACHING:   'Task deadline approaching.',
+    TASK_DEADLINE_APPROACHING_MESSAGE: 'Task "{{title}}" deadline is approaching.',
+    TASK_REMINDER: 'Task Reminder',
+    TASK_DEADLINE_REMINDER_MESSAGE: 'Your Task "{{title}}" deadline is now.',
+
 
     MISSING_DATA:                'Missing required data.',
     APPOINTMENT_NOT_FOUND:        'Linked appointment not found.',
@@ -228,6 +241,12 @@ const locales = {
     PENDING:                    'معلق',
     FOLLOW_REQUEST_SENT:         'تم إرسال طلب المتابعة.',
     FOLLOW_REQUEST_CANCELLED:      'تم إلغاء طلب المتابعة.',
+    NEW_FOLLOWER:              'متابع جديد',
+    NEW_FOLLOWER_NOTIFICATION : '{{name}} بدأ بمتابعتك.',
+    NEW_FOLLOW_REQUEST:         'طلب متابعة جديد',
+    NEW_FOLLOW_REQUEST_NOTIFICATION: '{{name}} أرسل لك طلب متابعة.',
+    FOLLOW_REQUEST_ACCEPTED: 'تم قبول طلب المتابعة.',
+    FOLLOW_REQUEST_ACCEPTED_NOTIFICATION: '{{name}} قام بقبول طلب المتابعة.',
 
     // ── task subjects ────────────────────────────────────────
     TASK_CREATED:                'تم إنشاء المهمة بنجاح.',
@@ -235,6 +254,10 @@ const locales = {
     TASK_DELETED:                'تم حذف المهمة بنجاح.',
     TASK_RETRIEVED:              'تم استرجاع المهمة بنجاح.',
     TASK_NOT_FOUND:              'المهمة غير موجودة.',
+    TASK_DEADLINE_APPROACHING:   'موعد المهمة قادم.',
+    TASK_DEADLINE_APPROACHING_MESSAGE: 'موعد المهمة "{{title}}" قادم.',
+    TASK_REMINDER: 'تذكير بالمهمة',
+    TASK_DEADLINE_REMINDER_MESSAGE: 'موعد مهمتك "{{title}}" الآن.',
 
     MISSING_DATA:                'بيانات مطلوبة مفقودة.',
     MISSING_DEADLINE:            'الموعد النهائي مطلوب.',

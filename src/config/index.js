@@ -1,5 +1,7 @@
 // We read from process.env (loaded by dotenv in server.js).
 
+const { Redirect } = require("twilio/lib/twiml/VoiceResponse");
+
 const config = {
   // Server
   port: process.env.PORT || 5000,
@@ -50,6 +52,9 @@ const config = {
         change_phone:   process.env.META_TEMPLATE_CHANGE_PHONE   || 'change_phone_otp',
       },
     },
+  },
+  redis: {
+    url: process.env.REDIS_URL,
   },
 
   // OTP settings
