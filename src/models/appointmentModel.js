@@ -118,13 +118,26 @@ appointmentSchema.methods.calculateTravelTime = async function () {
   return this;
 };
 // ── Validation Hooks ─────────────────────────────────────
-appointmentSchema.pre("save", function (next) {
+appointmentSchema.pre("save", async function (next) {
   if (this.isNew && this.arrivalTime < new Date()) {
     return next(new Error("Arrival time cannot be in the past"));
   }
 
   if (this.arrivalTime < new Date() && this.status === "scheduled") {
     this.status = "missed";
+  }
+
+  if (
+    this.isNew ||
+    this.isModified("transportation") ||
+    this.isModified("startLocation") ||
+    this.isModified("destinationLocation")
+  ) {
+    try {
+      await this.calculateTravelTime();
+    } catch (err) {
+      return next(err);
+    }
   }
 
   next();
