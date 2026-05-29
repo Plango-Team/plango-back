@@ -1,6 +1,7 @@
 const Appointment = require("../models/appointmentModel");
 const AppError = require("../utils/appError");
 const mongoose = require("mongoose");
+
 const generateRecurringAppointments = async (data) => {
   let current = new Date(data.arrivalTime);
   let end = new Date(data.repeatUntil);
