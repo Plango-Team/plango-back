@@ -13,22 +13,25 @@ const getEvents = async ({
 }) => {
   const pipeline = [];
 
+  //   الـ GeoNear لحساب المسافة والترتيب التلقائي للأقرب جغرافياً
   if (lng && lat) {
     pipeline.push({
       $geoNear: {
         near: {
           type: "Point",
-          coordinates: [parseFloat(lng), parseFloat(lat)],
+          coordinates: [parseFloat(lng), parseFloat(lat)], // إحداثيات اليوزر الحالية
         },
-        distanceField: "distance", // المسافة بالمتر للفرونت إند
+        distanceField: "distance", // يرجع المسافة بالمتر للفرونت إند
         spherical: true,
         query: { isActive: isActive },
       },
     });
   } else {
+    // الفعاليات النشطة فقط
     pipeline.push({ $match: { isActive: isActive } });
   }
 
+  // 2️⃣ بناء فلاتر البحث الأخرى (التصنيف، السعر، التاريخ)
   const matchFilters = {};
 
   if (category) matchFilters.category = category;
@@ -44,7 +47,7 @@ const getEvents = async ({
     matchFilters.price = { $gt: 0 };
   }
 
-  // فلاتر النطاق الزمني للفعالية
+  // فلاتر النطاق الزمني لبداية الفعالية
   if (from || to) {
     matchFilters.startDate = {};
     if (from) matchFilters.startDate.$gte = new Date(from);
@@ -68,7 +71,7 @@ const getEvents = async ({
     { $unwind: "$companyId" },
     {
       $project: {
-        "companyId.password": 0,
+        "companyId.password": 0, // تأمين البيانات للشركة
         "companyId.role": 0,
         "companyId.createdAt": 0,
         "companyId.updatedAt": 0,
@@ -77,7 +80,32 @@ const getEvents = async ({
     },
   );
 
-  //  الـ Sorting النهائي: حسب المسافة أولاً (لو موجودة) ثم وقت الفعالية الأقرب تاريخياً
+  pipeline.push({
+    $addFields: {
+      distance: { $ifNull: ["$distance", null] },
+
+      status: {
+        $cond: {
+          if: { $eq: ["$isActive", false] },
+          then: "inactive",
+          else: {
+            $cond: {
+              if: { $lt: ["$endDate", new Date()] },
+              then: "expired",
+              else: {
+                $cond: {
+                  if: { $gt: ["$startDate", new Date()] },
+                  then: "upcoming",
+                  else: "ongoing",
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
   const sortStage = {};
   if (lng && lat) {
     sortStage.distance = 1;
@@ -102,7 +130,11 @@ const getEvent = async ({ id }) => {
       "EVENT_NOT_FOUND",
     );
   }
-  return event;
+
+  const eventObj = event.toObject();
+  eventObj.distance = null;
+
+  return eventObj;
 };
 
 const addEventToSchedule = async ({
