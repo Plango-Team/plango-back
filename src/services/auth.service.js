@@ -69,8 +69,8 @@ const register = async ({ name, email, password, role = 'user', phone, location,
   });
 
   // Send verification link with the raw token
-  /* const url = buildUrl('verify-email', rawToken);
-  await emailService.sendVerificationEmail(user, url, lang); */
+  const url = buildUrl('verify-email', rawToken);
+  await emailService.sendVerificationEmail(user, url, lang);
 
   return user.toSafeObject();
 };
