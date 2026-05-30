@@ -5,7 +5,7 @@ const { config } = require('../config');
 const { t } = require('../utils/i18n');
 // Create one reusable mail transport
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
+  host: '142.251.127.109',
   port:587,
   secure:false,
   auth: {
