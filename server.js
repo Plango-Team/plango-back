@@ -1,6 +1,7 @@
 require('dotenv').config();
 const dns = require("dns");
 dns.setDefaultResultOrder("ipv4first");
+console.log("dns order test running");
 dns.lookup("smtp.gmail.com", { all: true }, (err, addresses) => {
   console.log("SMTP DNS:", addresses);
 });
