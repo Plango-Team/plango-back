@@ -1,4 +1,9 @@
 require('dotenv').config();
+const dns = require("dns");
+dns.setDefaultResultOrder("ipv4first");
+dns.lookup("smtp.gmail.com", { all: true }, (err, addresses) => {
+  console.log("SMTP DNS:", addresses);
+});
 
 
 const app = require('./src/app');
