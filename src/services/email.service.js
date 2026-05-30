@@ -13,6 +13,9 @@ const transporter = nodemailer.createTransport({
     pass: config.email.pass,
   },
 });
+transporter.verify()
+  .then(() => console.log("✅ SMTP Connected"))
+  .catch((err) => console.error("❌ SMTP Verify Error:", err));
 
 // Load an HTML template file and replace {{placeholders}} with real values
 const renderTemplate = (templateName, variables , lang ) => {
