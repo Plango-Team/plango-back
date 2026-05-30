@@ -64,6 +64,9 @@ const config = {
   securityLockHours: parseInt(process.env.SECURITY_LOCK_HOURS) || 24,
   // Account deletion grace period (time before permanent deletion after user requests account deletion)
   deletionGraceHours: parseInt(process.env.DELETION_GRACE_HOURS) || 24,
+  // ML API settings
+  mlApiUrl: process.env.ML_API_URL,
+  weatherApiKey: process.env.WEATHER_API_KEY,
 };
 
 // Make sure the critical values are set before the app starts

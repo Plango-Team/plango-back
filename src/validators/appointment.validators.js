@@ -5,6 +5,8 @@ const categories = ["work", "personal", "travel", "other"];
 const transportationTypes = ["car", "walking", "biking", "other"];
 const repeatTypes = ["daily", "weekly", "monthly"];
 const statusTypes = ["scheduled", "completed", "canceled"];
+const arrivalBufferOptions = [0, 5, 10, 15, 30];
+const preparationTimeOptions = [0, 10, 20, 30, 45, 60];
 
 // Location validator helper
 const locationValidator = (fieldName) => [
@@ -74,6 +76,14 @@ const createAppointment = [
     body('status')
     .optional()
     .isIn(statusTypes).withMessage(`Status must be one of: ${statusTypes.join(', ')}`),
+
+    body('arrivalBufferMinutes')
+    .optional()
+    .isin(arrivalBufferOptions).withMessage(`Arrival buffer minutes must be one of: ${arrivalBufferOptions.join(', ')}`),
+
+    body('preparationTimeMinutes')
+    .optional()
+    .isin(preparationTimeOptions).withMessage(`Preparation time minutes must be one of: ${preparationTimeOptions.join(', ')}`)
 ];
 
 // Update Appointment validator (all optional)
