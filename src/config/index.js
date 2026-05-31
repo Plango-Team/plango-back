@@ -59,11 +59,14 @@ const config = {
   securityLockHours: parseInt(process.env.SECURITY_LOCK_HOURS) || 24,
   // Account deletion grace period (time before permanent deletion after user requests account deletion)
   deletionGraceHours: parseInt(process.env.DELETION_GRACE_HOURS) || 24,
+
+  // Resend
+  resendApiKey: process.env.RESEND_API_KEY,
 };
 
 // Make sure the critical values are set before the app starts
 const checkRequired = () => {
-  const required = ['MONGODB_URI', 'JWT_SECRET'];
+  const required = ['MONGODB_URI', 'JWT_SECRET', 'RESEND_API_KEY'];
   const missing = required.filter((key) => !process.env[key]);
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
