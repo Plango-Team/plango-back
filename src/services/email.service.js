@@ -26,10 +26,10 @@ const renderTemplate = (templateName, variables , lang ) => {
 const sendEmail = async ({ to, subject, template, variables , lang }) => {
   const html = renderTemplate(template, variables);
 
-  console.log('🚀 Sending email...');
-  console.log('FROM:', config.email.from);
-  console.log('TO:', to);
-  console.log('KEY EXISTS:', !!config.resendApiKey);
+  // console.log('🚀 Sending email...');
+  // console.log('FROM:', config.email.from);
+  // console.log('TO:', to);
+  // console.log('KEY EXISTS:', !!config.resendApiKey);
 
   const { error , data } = await resend.emails.send({
     from: config.email.from,
@@ -38,8 +38,8 @@ const sendEmail = async ({ to, subject, template, variables , lang }) => {
     html,
   });
 
-  console.log('RESEND DATA:', data);
-  console.log('RESEND ERROR:', error);
+  // console.log('RESEND DATA:', data);
+  // console.log('RESEND ERROR:', error);
   
   if (error) {
     console.error('Error sending email:', error);
