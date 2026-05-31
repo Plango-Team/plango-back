@@ -3,13 +3,11 @@ const fs = require('fs');
 const path = require('path');
 const { config } = require('../config');
 const { t } = require('../utils/i18n');
+const  AppError  = require('../utils/appError');
 
 
 const resend = new Resend(config.resendApiKey);
 
-// transporter.verify()
-//   .then(() => console.log("✅ SMTP Connected"))
-//   .catch((err) => console.error("❌ SMTP Verify Error:", err));
 
 // Load an HTML template file and replace {{placeholders}} with real values
 const renderTemplate = (templateName, variables , lang ) => {
@@ -25,16 +23,24 @@ const renderTemplate = (templateName, variables , lang ) => {
 };
 
 // Core send function — used by all the specific senders below
-const sendEmail = async ({ to, subject, template, variables }) => {
+const sendEmail = async ({ to, subject, template, variables , lang }) => {
   const html = renderTemplate(template, variables);
 
-  const { error } = await resend.emails.send({
+  console.log('🚀 Sending email...');
+  console.log('FROM:', config.email.from);
+  console.log('TO:', to);
+  console.log('KEY EXISTS:', !!config.resendApiKey);
+
+  const { error , data } = await resend.emails.send({
     from: config.email.from,
     to,
     subject,
     html,
   });
 
+  console.log('RESEND DATA:', data);
+  console.log('RESEND ERROR:', error);
+  
   if (error) {
     console.error('Error sending email:', error);
     throw new AppError(t(lang, 'EMAIL_SEND_FAILED'), 500, 'EMAIL_SEND_FAILED');
@@ -51,6 +57,7 @@ const sendVerificationEmail = (user, verificationUrl , lang= 'ar') =>
     subject: t(lang, 'EMAIL_SUBJECT_VERIFY'),
     template: lang === 'ar' ? 'emailVerification-ar' : 'emailVerification',
     variables: { name: user.name, verificationUrl },
+    lang,
   });
 
 const sendPasswordResetEmail = (user, resetUrl, lang = 'ar') =>
@@ -59,6 +66,7 @@ const sendPasswordResetEmail = (user, resetUrl, lang = 'ar') =>
     subject: t(lang, 'EMAIL_SUBJECT_RESET'),
     template: lang === 'ar' ? 'passwordReset-ar' : 'passwordReset',
     variables: { name: user.name, resetUrl },
+    lang,
   });
 
 const sendEmailChangeEmail = (toEmail, user, changeUrl,lang='ar') =>
@@ -67,6 +75,7 @@ const sendEmailChangeEmail = (toEmail, user, changeUrl,lang='ar') =>
     subject: t(lang, 'EMAIL_SUBJECT_CHANGE_EMAIL'),
     template: lang === 'ar' ? 'changeEmail-ar' : 'changeEmail',
     variables: { name: user.name, changeUrl, newEmail: toEmail },
+    lang,
   });
 
 const sendSecurityAlertEmail = (user, action, lang = 'ar') =>
@@ -80,6 +89,7 @@ const sendSecurityAlertEmail = (user, action, lang = 'ar') =>
       time: new Date().toUTCString(),
       lockHours: config.securityLockHours,
     },
+    lang,
   });
 
  const sendDeleteAccountEmail = (user, lang = 'ar') => {
@@ -104,6 +114,7 @@ const sendSecurityAlertEmail = (user, action, lang = 'ar') =>
       name: user.name,
       time: formattedDate,
     },
+    lang,
   });
 };
 
