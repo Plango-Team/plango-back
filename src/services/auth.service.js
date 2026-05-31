@@ -70,8 +70,13 @@ const register = async ({ name, email, password, role = 'user', phone, location,
 
   // Send verification link with the raw token
   const url = buildUrl('verify-email', rawToken);
-  await emailService.sendVerificationEmail(user, url, lang);
-
+  try {
+    await emailService.sendVerificationEmail(user, url, lang);
+  }
+  catch (err) {
+    console.error('Error sending verification email:', err);
+    // Don't fail registration if email sending fails — user can still verify later
+  }
   return user.toSafeObject();
 };
 
@@ -110,7 +115,13 @@ const resendVerification = async (email, lang) => {
   user.emailVerificationExpires = hoursFromNow(24);
   await user.save({ validateBeforeSave: false });
 
-  await emailService.sendVerificationEmail(user, buildUrl('verify-email', rawToken), lang);
+  try {
+    await emailService.sendVerificationEmail(user, buildUrl('verify-email', rawToken), lang);
+  }
+  catch (err) {
+    console.error('Error resending verification email:', err);
+    // Don't fail the request if email sending fails — user can try again later
+  }
 };
 
 // Log in with email + password
@@ -163,7 +174,13 @@ const forgotPassword = async (email, lang) => {
   user.passwordResetExpires = hoursFromNow(1);
   await user.save({ validateBeforeSave: false });
 
-  await emailService.sendPasswordResetEmail(user, buildUrl('reset-password', rawToken), lang);
+  try {
+    await emailService.sendPasswordResetEmail(user, buildUrl('reset-password', rawToken), lang);
+  }
+  catch (err) {
+    console.error('Error sending password reset email:', err);
+    // Don't fail the request if email sending fails — user can try again later
+  }
 };
 
 // Send a password reset OTP via WhatsApp
@@ -179,8 +196,6 @@ const forgotPasswordOtp = async (phone, lang) => {
 // Reset password using the email token
 const resetPasswordWithToken = async (rawToken, newPassword , lang) => {
 
-  checkCooldown(user.passwordChangeAllowedAt, 'password change');
-
   const user = await User.findOne({
     passwordResetToken: hashValue(rawToken),
     passwordResetExpires: { $gt: Date.now() },
@@ -190,6 +205,8 @@ const resetPasswordWithToken = async (rawToken, newPassword , lang) => {
     throw new AppError(t(lang, 'RESET_TOKEN_INVALID'), 400, 'INVALID_TOKEN');
   }
 
+  checkCooldown(user.passwordChangeAllowedAt, 'password change');
+
   user.password = newPassword;
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
@@ -197,15 +214,22 @@ const resetPasswordWithToken = async (rawToken, newPassword , lang) => {
   await user.save();
 
   // Notify user of the change
-  emailService.sendSecurityAlertEmail(user, 'Password changed', lang).catch(() => {});
+  try {
+    await emailService.sendSecurityAlertEmail(user, 'Password changed', lang);
+  }
+  catch (err) {
+    console.error('Error sending security alert email:', err);
+    // Don't fail the request if email sending fails
+  }
 };
 
 // Reset password using the WhatsApp OTP
 const resetPasswordWithOtp = async (phone, submittedOtp, newPassword, lang) => {
 
-  checkCooldown(user.passwordChangeAllowedAt, 'password change', lang);
   const user = await User.findOne({ phone }).select(PRIVATE_FIELDS);
   if (!user) throw new AppError(t(lang, 'NO_ACCOUNT_PHONE'), 400, 'USER_NOT_FOUND');
+
+  checkCooldown(user.passwordChangeAllowedAt, 'password change', lang);
 
   await verifyOtp(user, submittedOtp, 'reset_password');
 
@@ -213,7 +237,13 @@ const resetPasswordWithOtp = async (phone, submittedOtp, newPassword, lang) => {
   user.setPasswordCooldown(); 
   await user.save();
 
-  emailService.sendSecurityAlertEmail(user, 'Password changed via WhatsApp', lang).catch(() => {});
+  try {
+    await emailService.sendSecurityAlertEmail(user, 'Password changed via WhatsApp', lang);
+  }
+  catch (err) {
+    console.error('Error sending security alert email:', err);
+    // Don't fail the request if email sending fails
+  }
 };
 
 // Change password while logged in
@@ -232,7 +262,13 @@ const changePassword = async (userId, currentPassword, newPassword, lang) => {
   user.setPasswordCooldown(); // prevent another password change for 24h
   await user.save();
 
-  emailService.sendSecurityAlertEmail(user, 'Password changed', lang).catch(() => {});
+  try {
+    await emailService.sendSecurityAlertEmail(user, 'Password changed', lang);
+  }
+  catch (err) {
+    console.error('Error sending security alert email:', err);
+    // Don't fail the request if email sending fails
+  }
 };
 
 // Send a verification OTP to a phone number

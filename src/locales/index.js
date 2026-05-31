@@ -89,6 +89,7 @@ const locales = {
     EMAIL_SUBJECT_CHANGE_EMAIL: 'Confirm your new email address',
     EMAIL_SUBJECT_SECURITY:     'Security alert: {{action}}',
     EMAIL_SUBJECT_DELETE_ACCOUNT: 'Account deletion request',
+    EMAIL_SEND_FAILED:            'Failed to send email. Please try again.',
 
     NAME_UPDATED:              'Name updated successfully.',
     ACCOUNT_DELETED:           'Account deleted. We\'re sorry to see you go!',
@@ -208,6 +209,7 @@ const locales = {
     EMAIL_SUBJECT_CHANGE_EMAIL: 'تأكيد بريدك الإلكتروني الجديد',
     EMAIL_SUBJECT_SECURITY:     'تنبيه أمني: {{action}}',
     EMAIL_SUBJECT_DELETE_ACCOUNT: 'طلب حذف الحساب',
+    EMAIL_SEND_FAILED:            'فشل في إرسال البريد الإلكتروني. يرجى المحاولة مرة أخرى.',
     
     NAME_UPDATED:              'تم تحديث الاسم بنجاح.',
     ACCOUNT_DELETED:           'تم حذف الحساب. نأسف لرؤيتك ترحل!',

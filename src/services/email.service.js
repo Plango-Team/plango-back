@@ -1,21 +1,15 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const fs = require('fs');
 const path = require('path');
 const { config } = require('../config');
 const { t } = require('../utils/i18n');
-// Create one reusable mail transport
-const transporter = nodemailer.createTransport({
-  host: '142.251.127.109',
-  port:587,
-  secure:false,
-  auth: {
-    user: config.email.user,
-    pass: config.email.pass,
-  },
-});
-transporter.verify()
-  .then(() => console.log("✅ SMTP Connected"))
-  .catch((err) => console.error("❌ SMTP Verify Error:", err));
+
+
+const resend = new Resend(config.resendApiKey);
+
+// transporter.verify()
+//   .then(() => console.log("✅ SMTP Connected"))
+//   .catch((err) => console.error("❌ SMTP Verify Error:", err));
 
 // Load an HTML template file and replace {{placeholders}} with real values
 const renderTemplate = (templateName, variables , lang ) => {
@@ -34,12 +28,17 @@ const renderTemplate = (templateName, variables , lang ) => {
 const sendEmail = async ({ to, subject, template, variables }) => {
   const html = renderTemplate(template, variables);
 
-  await transporter.sendMail({
+  const { error } = await resend.emails.send({
     from: config.email.from,
     to,
     subject,
     html,
   });
+
+  if (error) {
+    console.error('Error sending email:', error);
+    throw new AppError(t(lang, 'EMAIL_SEND_FAILED'), 500, 'EMAIL_SEND_FAILED');
+  }
 
   console.log(`📧 Email sent to ${to} — ${subject}`);
 };
