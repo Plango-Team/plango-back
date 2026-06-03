@@ -66,3 +66,5 @@ exports.deleteAppointment = catchAsync(async (req, res) => {
   sendSuccess(res, 200, t(req.lang, 'APPOINTMENT_DELETED'), null);
 
 });
+
+

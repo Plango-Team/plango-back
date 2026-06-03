@@ -41,7 +41,7 @@ exports.createUser = catchAsync(async (req, res) => {
 
 exports.updateUser = catchAsync(async (req, res, next) => {
   const lang = req.lang;
-  const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+  const user = await User.findByIdAndUpdate(req.user.id, req.body, {
     new: true,
     runValidators: true,
   });

@@ -1,4 +1,5 @@
 const Appointment = require("../models/appointmentModel");
+const User = require("../models/user.model");
 const AppError = require("../utils/appError");
 const mongoose = require("mongoose");
 
