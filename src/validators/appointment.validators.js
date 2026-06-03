@@ -56,9 +56,6 @@ const createAppointment = [
     ...locationValidator('startLocation'),
     ...locationValidator('destinationLocation'),
 
-    body('coordinates')
-    .notEmpty().withMessage('Coordinates are required'),
-
     body('isRecurring')
     .optional()
     .isBoolean().withMessage('isRecurring must be true or false'),
