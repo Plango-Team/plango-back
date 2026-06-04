@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const locationSchema = require("./locationSchema");
+const { isAxiosError } = require("axios");
 
 const appointmentSchema = new mongoose.Schema(
   {
@@ -15,11 +16,6 @@ const appointmentSchema = new mongoose.Schema(
       trim: true,
       maxlength: [500, "Description cannot exceed 500 characters"],
     },
-    category: {
-      type: String,
-      enum: ["work", "personal", "travel", "other"],
-      default: "personal",
-    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -32,7 +28,7 @@ const appointmentSchema = new mongoose.Schema(
     },
     transportation: {
       type: String,
-      enum: ["car", "walking", "driving", "other"],
+      enum: ["driving", "walking", "other"],
       required: [true, "transportation method is required"],
     },
     estimatedTravelTime: {
@@ -66,28 +62,26 @@ const appointmentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       index: true,
     },
+    startedTrip: {
+      type: Boolean,
+      default: false,
+    },
     polyline: { type: String },
     stepsCount: { type: Number, default: null },
     caloriesBurned: { type: Number, default: null },
+    DistanceInMeters: { type: Number, default: null },
   },
   { timestamps: true },
 );
 
 appointmentSchema.index({ userId: 1, arrivalTime: 1 }, { unique: true });
-appointmentSchema.index({ userId: 1, status: 1 });
 appointmentSchema.index({ isRecurring: 1 });
 
 // ── Virtuals ─────────────────────────────────────────────
-appointmentSchema.virtual("suggestedDepartureTime").get(function () {
-  if (!this.arrivalTime || !this.estimatedTravelTime) return null;
-  return new Date(
-    this.arrivalTime.getTime() - this.estimatedTravelTime * 60 * 1000,
-  );
-});
 
 appointmentSchema.virtual("Status").get(function () {
-  if (this.isCompleted) {
-    return "completed";
+  if (this.startedTrip) {
+    return "on the way";
   }
   if (this.arrivalTime < new Date()) {
     return "missed";
@@ -114,6 +108,7 @@ appointmentSchema.methods.calculateTravelTime = async function () {
   this.polyline = routeData.polyline;
   this.stepsCount = routeData.stepsCount;
   this.caloriesBurned = routeData.caloriesBurned;
+  this.DistanceInMeters = routeData.distanceValue;
 
   return this;
 };
@@ -123,21 +118,10 @@ appointmentSchema.pre("save", async function (next) {
     return next(new Error("Arrival time cannot be in the past"));
   }
 
-  if (this.arrivalTime < new Date() && this.status === "scheduled") {
-    this.status = "missed";
-  }
-
-  if (
-    this.isNew ||
-    this.isModified("transportation") ||
-    this.isModified("startLocation") ||
-    this.isModified("destinationLocation")
-  ) {
-    try {
-      await this.calculateTravelTime();
-    } catch (err) {
-      return next(err);
-    }
+  try {
+    await this.calculateTravelTime();
+  } catch (err) {
+    return next(err);
   }
 
   next();

@@ -203,6 +203,7 @@ const updateEvent = async ({ id, companyId, data }) => {
       "EVENT_NOT_FOUND",
     );
   }
+  await updateLinkedAppointments(event);
   return event;
 };
 
@@ -216,6 +217,12 @@ const deleteEvent = async ({ id, companyId }) => {
       "EVENT_NOT_FOUND",
     );
   }
+  Appointment.deleteMany({ eventId: event._id }).catch((err) => {
+    console.error(
+      `Failed to delete appointments linked to event ${event._id}:`,
+      err,
+    );
+  });
   return event;
 };
 
@@ -233,6 +240,31 @@ const toggleEventStatus = async ({ id, companyId }) => {
   event.isActive = !event.isActive;
   await event.save();
   return event;
+};
+
+const updateLinkedAppointments = async (event) => {
+  const appointments = await Appointment.find({ eventId: event._id });
+
+  if (!appointments || appointments.length === 0) return;
+
+  const updatePromises = appointments.map(async (app) => {
+    app.title = event.title;
+    app.description = event.description;
+    app.arrivalTime = event.startDate;
+
+    app.destinationLocation = {
+      addressName: event.location.addressName,
+      fullAddress: event.location.fullAddress,
+      type: "Point",
+      coordinates: event.location.coordinates,
+    };
+
+    await app.calculateTravelTime();
+
+    return app.save();
+  });
+
+  await Promise.all(updatePromises);
 };
 
 module.exports = {
