@@ -3,9 +3,8 @@ const Appointment = require("../models/appointmentModel");
 const AppError = require("../utils/appError");
 const createNotification = require("./notification.service").createNotification;
 const Notification = require("../models/notificationModel");
-const notificationQueue = require("../queues/notification.queue");
+const notificationQueue = require("../jobs/queues/notification.queue");
 const { t } = require("../utils/i18n");
-const { not } = require("joi");
 
 const createTask = async ({ data, userId, lang }) => {
   if (!data) {
