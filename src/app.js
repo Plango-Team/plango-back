@@ -19,6 +19,8 @@ const userRoutes = require('./routes/user.routes');
 const followRoutes = require('./routes/follow.routes');
 const taskRoutes = require('./routes/task.routes');
 const notificationRoutes = require('./routes/notification.routes');
+const calendarRoutes = require('./routes/calendar.routes');
+const postRoutes = require('./routes/post.routes');
 const { errorHandler, rateLimiters , detectLanguage } = require('./middlewares');
 
 // Crash early if required env variables are missing
@@ -78,8 +80,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/posts', postRoutes);
 app.use('/api', followRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/calendar', calendarRoutes);
 // ── 404 Handler ───────────────────────────────────────────
 app.all('*', (req, res) => {
   res.status(404).json({
