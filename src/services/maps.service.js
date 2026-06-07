@@ -23,7 +23,7 @@ exports.getDetailedRoute = async (origin, destination, mode = "driving") => {
           destination: destStr,
           mode: googleMode,
           departure_time: googleMode === "driving" ? "now" : undefined,
-          key: config.googleMapsKey,
+          key: config.GOOGLE_MAPS_API_KEY,
         },
       },
     );
