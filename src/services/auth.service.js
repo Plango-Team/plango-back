@@ -339,7 +339,7 @@ const confirmEmailChange = async (rawToken,lang) => {
     emailChangeExpires: { $gt: Date.now() },
   }).select(PRIVATE_FIELDS);
 
-  if (!user) throw new AppError(t('EMAIL_CHANGE_INVALID'), 400, 'INVALID_TOKEN');
+  if (!user) throw new AppError(t(lang,'EMAIL_CHANGE_INVALID'), 400, 'INVALID_TOKEN');
 
   const oldEmail = user.email;
   user.email = user.newEmail;
