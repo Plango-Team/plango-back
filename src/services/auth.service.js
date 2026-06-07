@@ -328,7 +328,7 @@ const requestEmailChange = async (userId, newEmail, password, lang) => {
   user.newEmail = newEmail.toLowerCase();
   await user.save({ validateBeforeSave: false });
 
-  const url = buildUrl('confirm-email-change', rawToken);
+  const url = buildUrl('auth/email/confirm-change', rawToken);
   await emailService.sendEmailChangeEmail(newEmail, user, url);
 };
 
