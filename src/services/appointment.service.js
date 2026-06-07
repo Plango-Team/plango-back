@@ -1,4 +1,6 @@
 const Appointment = require("../models/appointmentModel");
+const AppointmentInvite = require("../models/appointmentInvite.model");
+const User = require("../models/user.model");
 const AppError = require("../utils/appError");
 const mongoose = require("mongoose");
 
@@ -57,7 +59,25 @@ const getAppointments = async ({ userId, category, from, to, lang }) => {
   if (!userId) {
     throw new AppError("unauthorized", 401, "UNAUTHORIZED");
   }
-  const filter = { userId };
+  // get accepted invites 
+  const acceptedInvites = await AppointmentInvite.find({
+    receiverId: userId,
+    status: "accepted"
+  }).select("appointmentId");
+  
+  const acceptedAppointmentIds = acceptedInvites.map(invite => invite.appointmentId);
+
+  const userCondition = {
+    $or: [
+      { userId: userId },                        
+      { _id: { $in: acceptedAppointmentIds } }    
+    ]
+  };
+
+  
+  
+  const filter = { ...userCondition };
+  
 
   // category filter
   if (category) {
@@ -81,6 +101,7 @@ const getAppointments = async ({ userId, category, from, to, lang }) => {
   }
   return appointments;
 };
+
 const getAppointment = async ({ id, userId }) => {
   const appointment = await Appointment.findOne({ _id: id, userId });
   if (!appointment) {

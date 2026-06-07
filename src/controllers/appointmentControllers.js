@@ -11,9 +11,6 @@ exports.getAppointments = catchAsync(async (req, res) => {
   const { category, from, to } = req.query;
   
   const appointments = await appointmentService.getAppointments({ userId, category,from,to, lang: req.lang });
-  //console.log(req.query.category);
-  console.log("Collection Name: ", Appointment.collection.name);
-console.log("DB Name: ", Appointment.db.name);
   sendSuccess(res, 200, t(req.lang, 'success'), { results: appointments.length, appointments });
   
 });
@@ -66,3 +63,5 @@ exports.deleteAppointment = catchAsync(async (req, res) => {
   sendSuccess(res, 200, t(req.lang, 'APPOINTMENT_DELETED'), null);
 
 });
+
+
