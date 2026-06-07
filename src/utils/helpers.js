@@ -3,6 +3,7 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { config } = require('../config');
+const User = require('../models/user.model');
 
 // ── Hashing ───────────────────────────────────────────────
 
@@ -77,6 +78,17 @@ const minutesFromNow = (minutes) => new Date(Date.now() + minutes * 60 * 1000);
 // Add hours to now — used for token expiry and security lock
 const hoursFromNow = (hours) => new Date(Date.now() + hours * 60 * 60 * 1000);
 
+const releaseExpiredPhone = async (phone) => {
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+  const user = await User.findOne({ phone });
+
+  if(!user) return;
+  const isExpired = Date.now() - user.createdAt.getTime() > ONE_DAY;
+  if( (isExpired && !user.isPhoneVerified)  || !user.isActive ) {
+    await User.updateOne({ _id: user._id }, { $unset: { phone: 1 } }); // OR phone ""
+  }
+};
+
 module.exports = {
   hashValue,
   randomToken,
@@ -88,4 +100,5 @@ module.exports = {
   catchAsync,
   minutesFromNow,
   hoursFromNow,
+  releaseExpiredPhone
 };

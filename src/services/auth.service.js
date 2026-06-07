@@ -1,7 +1,7 @@
 const User = require('../models/user.model');
 const Follow = require('../models/followModel');
 const AppError = require('../utils/appError');
-const { hashValue, randomToken, signToken, hoursFromNow } = require('../utils/helpers');
+const { hashValue, randomToken, signToken, hoursFromNow , releaseExpiredPhone } = require('../utils/helpers');
 const { sendOtp, verifyOtp } = require('./otp.service');
 const emailService = require('./email.service');
 const { config } = require('../config');
@@ -48,10 +48,20 @@ const register = async ({ name, email, password, role = 'user', phone, location,
     throw new AppError(t(lang , 'EMAIL_TAKEN'), 409, 'EMAIL_TAKEN');
   }
 
+  if(phone) {
+    await releaseExpiredPhone(phone); // free up any expired holds on this number
+    const phoneTaken = await User.findOne({ phone ,isActive: true });
+    if(phoneTaken) {
+      throw new AppError(t(lang , 'PHONE_TAKEN'), 409, 'PHONE_TAKEN');
+    }
+  }
+
   // Create a random token, hash it, and store the hash
   // We email the raw token — only the hash lives in DB
   const rawToken = randomToken();
   const hashedToken = hashValue(rawToken);
+
+
 
   const user = await User.create({
     name,
@@ -356,6 +366,7 @@ const requestPhoneChange = async (userId, newPhone, password, lang) => {
   // Only phone changes are restricted — nothing else is affected
   checkCooldown(user.phoneChangeAllowedAt, 'phone change', lang);
 
+  await releaseExpiredPhone(newPhone); // free up any expired holds on this number
   const taken = await User.findOne({ phone: newPhone, _id: { $ne: userId } });
   if (taken) throw new AppError(t(lang, 'PHONE_TAKEN'), 409, 'PHONE_TAKEN');
 

@@ -203,7 +203,7 @@ const rateLimiters = {
   }),
 
   changePassword: makeDualLimiter({
-    windowMs: 15 * 60 * 1000,
+    windowMs: 30 * 60 * 1000,
     idMax: 10,
     ipMax: 20,
   }),
