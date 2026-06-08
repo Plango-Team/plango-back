@@ -43,7 +43,7 @@ const checkCooldown = (allowedAt, actionLabel, lang) => {
 // Register a new user
 const register = async ({ name, email, password, role = 'user', phone, location, lang , isPrivate , username, bio}) => {
   // Make sure no one already has this email
-  const existing = await User.findOne({ email });
+  const existing = await User.findOne({ email: email.toLowerCase() , isActive: true });
   if (existing) {
     throw new AppError(t(lang , 'EMAIL_TAKEN'), 409, 'EMAIL_TAKEN');
   }
