@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const calculationSchema = new mongoose.Schema(
   {
-    AppointmentId: {
+    appointmentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Appointment",
       required: [true, "appointment id is required"],
@@ -32,6 +32,18 @@ const calculationSchema = new mongoose.Schema(
       type: Number,
       required: [true, "weather severity is required"],
       enum: [0, 1, 2, 3],
+    },
+    recalculationJobId: {
+      type: String,
+      default: null,
+    },
+    preparationNotificationJobId: {
+      type: String,
+      default: null,
+    },
+    departureNotificationJobId: {
+      type: String,
+      default: null,
     },
     modelVersion: {
       type: String,
