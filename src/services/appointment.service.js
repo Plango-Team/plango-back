@@ -2,6 +2,7 @@ const Appointment = require("../models/appointmentModel");
 const AppointmentInvite = require("../models/appointmentInvite.model");
 const AppError = require("../utils/appError");
 const mongoose = require("mongoose");
+const planningService = require("./planning.service");
 
 const generateRecurringAppointments = async (data) => {
   let current = new Date(data.arrivalTime);
@@ -57,6 +58,8 @@ const createAppointment = async ({ data, userId }) => {
   if (!newAppointment) {
     throw new AppError("Failed to create appointment", 500, "APPOINTMENT_CREATION_FAILED");
   }
+  const planningData = await planningService.calculatePlanning(newAppointment._id);
+  await planningService.savePlanning(planningData.appointment , planningData);
   return newAppointment;
 };
 
@@ -206,6 +209,8 @@ const updateSingleAppointment = async ({ id, userId, data }) => {
   }
 
   await appointment.save();
+    const planningData = await planningService.calculatePlanning(appointment._id);
+  await planningService.savePlanning(planningData.appointment , planningData);
   return appointment;
 };
 
@@ -264,6 +269,7 @@ const deleteSingleAppointment = async ({ id, userId }) => {
   if (!appointment) {
     throw new AppError("No appointment found with that ID", 404, "APPOINTMENT_NOT_FOUND");
   }
+  await planningService.cancelPlanning(appointment._id);
   return appointment;
 };
 
