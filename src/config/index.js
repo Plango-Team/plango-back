@@ -59,6 +59,8 @@ const config = {
   securityLockHours: parseInt(process.env.SECURITY_LOCK_HOURS) || 24,
   // Account deletion grace period (time before permanent deletion after user requests account deletion)
   deletionGraceHours: parseInt(process.env.DELETION_GRACE_HOURS) || 24,
+  // google Maps API Key
+  GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
 };
 
 // Make sure the critical values are set before the app starts

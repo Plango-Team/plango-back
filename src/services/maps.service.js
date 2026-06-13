@@ -11,6 +11,7 @@ exports.getDetailedRoute = async (origin, destination, mode = "driving") => {
       car: "driving",
       walking: "walking",
       biking: "bicycling",
+      transit: "transit",
       other: "driving",
     };
     const googleMode = googleModes[mode] || "driving";
@@ -29,6 +30,16 @@ exports.getDetailedRoute = async (origin, destination, mode = "driving") => {
     );
 
     if (response.data.status !== "OK" || !response.data.routes.length) {
+      // 1. هطبع الـ Status اللي رجعت (مثلا: REQUEST_DENIED)
+      console.log("❌ Google Maps Error Status:", response.data.status); 
+      
+      // 2. هطبع رسالة السبب بالتفصيل لو جوجل كاتبها
+      if (response.data.error_message) {
+        console.log("📝 Google Maps Error Message:", response.data.error_message);
+      } else {
+        console.log("📝 No error message provided by Google (Check coordinates or route availability).");
+      }
+
       throw new AppError("Could not calculate detailed route.", 400);
     }
 

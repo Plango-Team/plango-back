@@ -127,7 +127,7 @@ const login = async ({ email, password } , lang) => {
     throw new AppError(t(lang, 'INVALID_CREDENTIALS'), 401, 'INVALID_CREDENTIALS');
   }
   checkIsActive(user, lang);
-  //checkEmailVerified(user, lang);
+  checkEmailVerified(user, lang);
 
   if (user.provider !== 'local') {
     throw new AppError(t(lang, 'WRONG_PROVIDER'), 400, 'WRONG_PROVIDER');

@@ -2,6 +2,7 @@ const AppointmentInvite = require("../models/appointmentInvite.model");
 const Appointment = require("../models/appointmentModel");
 const AppError = require("../utils/appError");
 const User = require("../models/user.model");
+const mapsService = require("../services/maps.service");
 
 
 const inviteUsers = async ({ appointmentId, ownerId, invitedUsernames }) => {
@@ -9,63 +10,59 @@ const inviteUsers = async ({ appointmentId, ownerId, invitedUsernames }) => {
     if (!appointment) {
         throw new AppError("No appointment found with that ID", 404, "APPOINTMENT_NOT_FOUND");   
     }
-    // user must be the owner of the appointment to send invites
-    if (!appointment.userId.equals(ownerId)) {
-    throw new AppError("Unauthorized", 403);
-}
 
-    const createdInvites = [];
+    if (!appointment.userId.equals(ownerId)) {
+        throw new AppError("Unauthorized", 403);
+    }
+
     const errors = [];
 
-    // process each invited username
+    
     const invitePromises = invitedUsernames.map(async (username) => {
         const invitedUser = await User.findOne({ username: username });
         if (!invitedUser) {
             errors.push(`User ${username} not found`);
-            return;
+            return null;
         }
         
         const invitedUserId = invitedUser._id;
-        // prevent inviting oneself
+        
         if (appointment.userId.equals(invitedUserId)) {
             errors.push(`You cannot invite yourself (${username})`);
-            return;
+            return null;
         }
-        // check if already invited
+
         const alreadyInvited = await AppointmentInvite.findOne({
             appointmentId,
             receiverId: invitedUserId,
         });
         if (alreadyInvited) {
             errors.push(`User ${username} is already invited`);
-            return;
+            return null;
         }
-        // create invite
-        const invite = await AppointmentInvite.create({
+
+    
+        return await AppointmentInvite.create({
             appointmentId,
             senderId: ownerId,
             receiverId: invitedUserId,
             status: "pending"
         });
-
-        createdInvites.push(invite);
     });
 
-    await Promise.all(invitePromises);
+    const results = await Promise.all(invitePromises);
+    
+    const createdInvites = results.filter(invite => invite !== null);
     
     if (createdInvites.length === 0 && errors.length > 0) {
         throw new AppError(errors.join(", "), 400, "INVITATION_FAILED");
     }
     
     return { createdInvites, errors };
-}
+};
+
 
 const acceptInvite = async ({ appointmentId, userId, startLocation, transportation }) => {
-    //check required fields
-    if (!startLocation || !transportation) {
-        throw new AppError("Start location and transportation are required to accept the invite", 400);
-    }
-
     const invite = await AppointmentInvite.findOne({ appointmentId, receiverId: userId });
     if (!invite) {
         throw new AppError("Invite not found", 404, "INVITE_NOT_FOUND");
@@ -76,41 +73,72 @@ const acceptInvite = async ({ appointmentId, userId, startLocation, transportati
         throw new AppError("Appointment not found", 404);
     }
     
-    // check if invite is already accepted or declined, or if appointment time has passed
     if (invite.status === "accepted") throw new AppError("Invite already accepted", 400, "ALREADY_ACCEPTED");
     if (invite.status === "declined") throw new AppError("Invite already declined", 400, "ALREADY_DECLINED");
     if (appointment.arrivalTime < new Date()) throw new AppError("Cannot accept invite after appointment time", 400, "APPOINTMENT_PAST");
     
-    //calculate estimated travel time
+    
+    const transportationMap = {
+        'car': 'driving',
+        'driving': 'driving',
+        'walking': 'walking',
+        'biking': 'bicycling',
+        'bicycling': 'bicycling',
+        'other': 'other'  
+    };
+    const internalTransportMode = transportationMap[transportation] || 'driving';
+
     let calculatedTime = 0;
+    let polyline = "";
+    let stepsCount = null;
+    let caloriesBurned = null;
+    let distanceInMeters = null;
+
     try {
+        const routeData = await mapsService.getDetailedRoute(
+            startLocation.coordinates,
+            appointment.destinationLocation.coordinates,
+            internalTransportMode
+        );
         
-        calculatedTime = 25;
+        if (!routeData || routeData.durationMinutes === undefined) {
+            throw new AppError("Maps API returned invalid route data", 500);
+        }
+        
+        calculatedTime = routeData.durationMinutes;
+        polyline = routeData.polyline || "";
+        stepsCount = routeData.stepsCount || null;
+        caloriesBurned = routeData.caloriesBurned || null;
+        distanceInMeters = routeData.distanceValue || null; // ✨ جلب المسافة لليوزر المدعو
+        
     } catch (err) {
-        console.error("Maps service error:", err);
+        throw new AppError(`Failed to calculate travel time: ${err.message}`, err.status || 500);
     }
 
-    // update invite status and travel details
+
     invite.startLocation = startLocation;
-    invite.transportation = transportation;
+    invite.transportation = internalTransportMode; 
     invite.estimatedTravelTime = calculatedTime; 
+    invite.polyline = polyline;
+    invite.stepsCount = stepsCount;
+    invite.caloriesBurned = caloriesBurned;
+    invite.distanceInMeters = distanceInMeters; 
     invite.status = "accepted";
     invite.joinedAt = new Date();
 
     await invite.save();
     
-    return invite;
-}
+    const inviteObj = invite.toObject({ virtuals: true });
+    inviteObj.travelHours = +((calculatedTime || 0) / 60).toFixed(1);
+    
+    return inviteObj;
+};
 
+// ── رفض الدعوة ─────────────────────────────────────────────
 const declineInvite = async ({ appointmentId, userId }) => {
-
-    const invite = await AppointmentInvite.findOne({
-    appointmentId,
-    receiverId: userId,
-    });
-
+    const invite = await AppointmentInvite.findOne({ appointmentId, receiverId: userId });
     if (!invite) {
-    throw new AppError("Invite not found", 404);
+        throw new AppError("Invite not found", 404);
     }
 
     const appointment = await Appointment.findById(appointmentId);
@@ -122,36 +150,42 @@ const declineInvite = async ({ appointmentId, userId }) => {
         throw new AppError("Cannot decline invite after appointment time", 400, "APPOINTMENT_PAST");
     }
 
-    if (invite.status === "declined") {
-    throw new AppError("Invite already declined", 400, "ALREADY_DECLINED");
-    }
-
-    if (invite.status === "accepted") {
-    throw new AppError("Invite already accepted", 400, "ALREADY_ACCEPTED");
-    }
+    if (invite.status === "declined") throw new AppError("Invite already declined", 400, "ALREADY_DECLINED");
+    if (invite.status === "accepted") throw new AppError("Invite already accepted", 400, "ALREADY_ACCEPTED");
 
     invite.status = "declined";
-
     await invite.save();
 
     return invite;
 };
 
-const getMyInvites = async ({ userId }) => {
-    // Fetch invites where status is pending
-    const invites = await AppointmentInvite.find({
-        receiverId: userId,
-        status: "pending"
-    })
-    .populate({
-        path: "appointmentId",
-        select: "title description arrivalTime destinationLocation" 
-    })
-    .populate({
-        path: "senderId",
-        select: "name username "
-    }).sort({ createdAt: -1 }); 
 
-    return invites;
+const getMyInvites = async ({ userId }) => {
+    return await AppointmentInvite.find({ receiverId: userId, status: "pending" })
+        .populate({
+            path: "appointmentId",
+            select: "title description arrivalTime destinationLocation" 
+        })
+        .populate({
+            path: "senderId",
+            select: "name username"
+        })
+        .sort({ createdAt: -1 }); 
 };
-module.exports = {inviteUsers, acceptInvite, declineInvite, getMyInvites};
+
+
+const cancelInvite = async ({ appointmentId, receiverId, ownerId }) => {
+    const invite = await AppointmentInvite.findOne({ appointmentId, receiverId });
+    if (!invite) {
+        throw new AppError("Invitation not found", 404);
+    }
+
+    if (invite.senderId.equals(ownerId) || invite.receiverId.equals(ownerId)) {
+        await AppointmentInvite.findByIdAndDelete(invite._id);
+        return { success: true };
+    }
+    
+    throw new AppError("Unauthorized to cancel this invitation", 403);
+};
+
+module.exports = { inviteUsers, acceptInvite, declineInvite, getMyInvites, cancelInvite };

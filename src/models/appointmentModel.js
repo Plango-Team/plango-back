@@ -28,7 +28,7 @@ const appointmentSchema = new mongoose.Schema(
     },
     transportation: {
       type: String,
-      enum: ["driving", "walking", "other"],
+      enum: ['driving', 'walking', 'bicycling','other'],
       required: [true, "transportation method is required"],
     },
     estimatedTravelTime: {
@@ -69,9 +69,25 @@ const appointmentSchema = new mongoose.Schema(
     polyline: { type: String },
     stepsCount: { type: Number, default: null },
     caloriesBurned: { type: Number, default: null },
-    DistanceInMeters: { type: Number, default: null },
+    distanceInMeters: { type: Number, default: null },
+    arrivalBuffer: {
+      type: Number,
+      enum: [0, 5, 10, 15, 30],
+      default: 0,
+    },
+    preparationTime: {
+      type: Number,
+      enum: [0, 10, 20, 30, 45, 60],
+      default: 0,
+    },
+    isCompleted: {
+      type: Boolean,
+      default: false,
+    },
   },
-  { timestamps: true },
+  { timestamps: true,
+    toJSON: { virtuals: true },  
+    toObject: { virtuals: true } },
 );
 
 appointmentSchema.index({ userId: 1, arrivalTime: 1 }, { unique: true });
@@ -80,6 +96,9 @@ appointmentSchema.index({ isRecurring: 1 });
 // ── Virtuals ─────────────────────────────────────────────
 
 appointmentSchema.virtual("Status").get(function () {
+  if (this.isCompleted){ 
+    return "completed";}
+
   if (this.startedTrip) {
     return "on the way";
   }
@@ -90,7 +109,15 @@ appointmentSchema.virtual("Status").get(function () {
 });
 
 appointmentSchema.virtual("travelHours").get(function () {
-  return +(this.estimatedTravelTime / 60).toFixed(1);
+
+  const minutes = this.estimatedTravelTime || 0;
+  return +(minutes / 60).toFixed(1);
+});
+
+appointmentSchema.virtual('participants', {
+  ref: 'AppointmentInvite',     
+  localField: '_id',            
+  foreignField: 'appointmentId', 
 });
 
 // ── Instance Methods ─────────────────────────────────────
@@ -108,7 +135,7 @@ appointmentSchema.methods.calculateTravelTime = async function () {
   this.polyline = routeData.polyline;
   this.stepsCount = routeData.stepsCount;
   this.caloriesBurned = routeData.caloriesBurned;
-  this.DistanceInMeters = routeData.distanceValue;
+  this.distanceInMeters = routeData.distanceValue;
 
   return this;
 };
@@ -117,13 +144,13 @@ appointmentSchema.pre("save", async function (next) {
   if (this.isNew && this.arrivalTime < new Date()) {
     return next(new Error("Arrival time cannot be in the past"));
   }
-
+if (this.isNew || this.isModified("startLocation") || this.isModified("destinationLocation") || this.isModified("transportation")) {
   try {
     await this.calculateTravelTime();
   } catch (err) {
     return next(err);
   }
-
+}
   next();
 });
 
