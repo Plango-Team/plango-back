@@ -1,4 +1,5 @@
 const { Server } = require("socket.io");
+const registerChatHandlers = require("./chat.handler");
 
 const config = require("../config");
 const { verifyToken } = require("../utils/helpers");
@@ -40,6 +41,7 @@ const initializeSocket = (server) => {
     // console.log("✅ Socket user:",);
     // console.log(socket.user);
     addOnlineUser(socket.user.sub, socket.id);
+    registerChatHandlers(io, socket);
 
     socket.on("disconnect", () => {
       removeOnlineUser(socket.id);
