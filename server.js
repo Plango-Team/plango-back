@@ -4,12 +4,18 @@ require('dotenv').config();
 const app = require('./src/app');
 const connectDB = require('./src/config/db');
 const { config } = require('./src/config');
-
+const http = require('http');
+const { initializeSocket } = require('./src/socket');
+require('./src/jobs/redis'); // Initialize Redis connection
+require('./src/jobs/workers/notification.worker'); // Initialize notification job worker
 const start = async () => {
   // Connect to MongoDB before starting the server
   await connectDB();
 
-  const server = app.listen(config.port, () => {
+  const httpServer = http.createServer(app);
+  initializeSocket(httpServer);
+
+  const server = httpServer.listen(config.port, () => {
     console.log(`\n🚀 Server running on port ${config.port} [${config.nodeEnv}]`);
     console.log(`📋 Health check: http://localhost:${config.port}/health`);
     console.log(`🔐 Auth API:     http://localhost:${config.port}/api/auth\n`);

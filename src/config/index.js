@@ -1,5 +1,7 @@
 // We read from process.env (loaded by dotenv in server.js).
 
+const { Redirect } = require("twilio/lib/twiml/VoiceResponse");
+
 const config = {
   // Server
   port: process.env.PORT || 5000,
@@ -51,6 +53,9 @@ const config = {
       },
     },
   },
+  redis: {
+    url: process.env.REDIS_URL,
+  },
 
   // OTP settings
   otpExpiresMinutes: parseInt(process.env.OTP_EXPIRES_MINUTES) || 10,
@@ -61,6 +66,9 @@ const config = {
   deletionGraceHours: parseInt(process.env.DELETION_GRACE_HOURS) || 24,
   // google Maps API Key
   GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
+  // ML API settings
+  mlApiUrl: process.env.ML_API_URL,
+  weatherApiKey: process.env.WEATHER_API_KEY,
 };
 
 // Make sure the critical values are set before the app starts

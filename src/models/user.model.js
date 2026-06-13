@@ -123,6 +123,8 @@ const userSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true, select: false },
 
     lastLoginAt: { type: Date },
+
+    fcmTokens: [{ type: String, select: false }], // for push notifications
   },
   {
     timestamps: true, // adds createdAt and updatedAt automatically

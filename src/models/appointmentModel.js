@@ -122,7 +122,7 @@ appointmentSchema.virtual('participants', {
 
 // ── Instance Methods ─────────────────────────────────────
 
-appointmentSchema.methods.calculateTravelTime = async function () {
+ appointmentSchema.methods.calculateTravelTime = async function () {
   const mapsService = require("../services/maps.service");
 
   const routeData = await mapsService.getDetailedRoute(
