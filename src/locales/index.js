@@ -144,6 +144,9 @@ const locales = {
     POST_UPDATED:               'Post updated successfully.',
     POST_DELETED:               'Post deleted successfully.',
 
+    APPOINTMENT_NOT_FOUND:        'appointment not found.',
+    CHAT_ACCESS_DENIED:            'You do not have access to this chat.',
+
   },
 
   ar: {
@@ -279,6 +282,9 @@ const locales = {
     POST_CREATED:               'تم إنشاء المنشور بنجاح.',
     POST_UPDATED:               'تم تحديث المنشور بنجاح.',
     POST_DELETED:               'تم حذف المنشور بنجاح.',
+
+    APPOINTMENT_NOT_FOUND:        'الموعد غير موجود.',
+    CHAT_ACCESS_DENIED:            'ليس لديك صلاحية الوصول إلى هذه المحادثة.',
   },
 };
 
