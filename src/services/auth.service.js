@@ -1,6 +1,7 @@
 const User = require('../models/user.model');
 const Follow = require('../models/followModel');
 const AppError = require('../utils/appError');
+const bcrypt = require("bcryptjs");
 const { hashValue, randomToken, signToken, hoursFromNow } = require('../utils/helpers');
 const { sendOtp, verifyOtp } = require('./otp.service');
 const emailService = require('./email.service');
@@ -121,10 +122,10 @@ const login = async ({ email, password } , lang) => {
   // Always run comparePassword even if user is null — prevents timing attacks
   const passwordMatch = user ? await user.comparePassword(password) : false;
 
+
   if (!user || !passwordMatch) {
     throw new AppError(t(lang, 'INVALID_CREDENTIALS'), 401, 'INVALID_CREDENTIALS');
   }
-
   checkIsActive(user, lang);
   checkEmailVerified(user, lang);
 

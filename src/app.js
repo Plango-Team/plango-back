@@ -18,6 +18,8 @@ const appointmentRoutes = require('./routes/appointment.routes');
 const userRoutes = require('./routes/user.routes');
 const followRoutes = require('./routes/follow.routes');
 const taskRoutes = require('./routes/task.routes');
+const eventRoutes = require("./routes/event.routes");
+const appointmentInviteRoutes = require("./routes/appointmentInvite.routes");
 const notificationRoutes = require('./routes/notification.routes');
 const calendarRoutes = require('./routes/calendar.routes');
 const postRoutes = require('./routes/post.routes');
@@ -82,6 +84,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api', followRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/invites", appointmentInviteRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/calendar', calendarRoutes);
 // ── 404 Handler ───────────────────────────────────────────
