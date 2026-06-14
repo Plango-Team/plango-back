@@ -51,6 +51,9 @@ const config = {
       },
     },
   },
+  redis: {
+    url: process.env.REDIS_URL,
+  },
 
   // OTP settings
   otpExpiresMinutes: parseInt(process.env.OTP_EXPIRES_MINUTES) || 10,
@@ -62,6 +65,11 @@ const config = {
 
   // Resend
   resendApiKey: process.env.RESEND_API_KEY,
+  // google Maps API Key
+  GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
+  // ML API settings
+  mlApiUrl: process.env.ML_API_URL,
+  weatherApiKey: process.env.WEATHER_API_KEY,
 };
 
 // Make sure the critical values are set before the app starts

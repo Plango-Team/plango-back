@@ -1,6 +1,8 @@
 const Follow = require('../models/followModel');
 const User = require('../models/user.model');
 const AppError = require('../utils/appError');
+const { database } = require('firebase-admin');
+const createNotification = require('./notification.service').createNotification;
 const { t } = require('../utils/i18n');
 
 
@@ -34,6 +36,27 @@ const followUser = async (currentUserId, targetUserId, lang) => {
     following: targetUserId,
     status,
   });
+
+  const sender = await User.findById(currentUserId).select('name');
+  if (status === 'accepted') {
+    await createNotification({
+      recipient: targetUserId,
+      title: t(lang, 'NEW_FOLLOWER'),
+      type: 'new_follower',
+      message: t(lang, 'NEW_FOLLOWER_NOTIFICATION', { name: sender.name }),
+      data: { followerId: currentUserId },
+    });
+  }
+  if(status === 'pending') {
+    await createNotification({
+      recipient: targetUserId,
+      title: t(lang, 'NEW_FOLLOW_REQUEST'),
+      type: 'new_follow_request',
+      message: t(lang, 'NEW_FOLLOW_REQUEST_NOTIFICATION', { name: sender.name }),
+      data: { followerId: currentUserId },
+    });
+  }
+
 
   return follow;
 };
@@ -71,6 +94,15 @@ const acceptFollowRequest = async (
   follow.status = 'accepted';
 
   await follow.save();
+
+  const reciver = await User.findById(currentUserId).select('name');
+  await createNotification({
+    recipient: follow.follower,
+    title: t(lang, 'FOLLOW_REQUEST_ACCEPTED'),
+    type: 'follow_request_accepted',
+    message: t(lang, 'FOLLOW_REQUEST_ACCEPTED_NOTIFICATION', { name: reciver.name }),
+    data: { followerId: currentUserId },
+  });
 
   return follow;
 };

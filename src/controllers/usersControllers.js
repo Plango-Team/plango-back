@@ -39,19 +39,40 @@ exports.createUser = catchAsync(async (req, res) => {
   });
 });
 
-exports.updateUser = catchAsync(async (req, res, next) => {
+const filterObj = (obj , ...fields ) => {
+    const newObj={};
+    Object.keys(obj).forEach(el => {
+        if(fields.includes(el)) newObj[el]=obj[el];
+    });
+    return newObj;
+    
+}
+
+exports.updateMe = catchAsync(async (req, res, next) => {
   const lang = req.lang;
-  const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+
+  const hasSensitiveFields = req.body.password || req.body.email || req.body.phone || req.body.username;
+
+  if (hasSensitiveFields) {
+    return next(
+      new AppError(
+        "Account credentials (username, email, phone, and password) must be updated through their dedicated security features.", 
+        400
+      )
+    );
+  }
+  const filteredBody = filterObj(req.body, 'name', 'isPrivate', 'bio', 'location');
+  const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
     runValidators: true,
   });
-  if (!user) {
-    return next(new AppError(t(lang, 'NOT_FOUND'), 404));
+  if (!updatedUser) {
+    return next(new AppError(t(lang, 'USER_NOT_FOUND'), 404));
   }
   res.status(200).json({
     status: "success",
     data: {
-      user,
+      user: updatedUser.toSafeObject(),
     },
   });
 });

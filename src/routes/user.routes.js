@@ -16,6 +16,7 @@ router.post("/", usrctlr.createUser);
 
 router.get("/:id", usrctlr.getUser);
 router.put("/:id", usrctlr.updateUser);
+router.put("/updateMe", usrctlr.updateMe);
 router.delete("/:id", usrctlr.deleteUser);
 
 module.exports = router;
