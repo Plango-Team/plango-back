@@ -4,7 +4,7 @@ const AppError = require("../utils/appError");
 const mongoose = require("mongoose");
 const planningService = require("./planning.service");
 
-const generateRecurringAppointments = async (data) => {
+const generateRecurringAppointments = async (data,lang) => {
   let current = new Date(data.arrivalTime);
   let end = new Date(data.repeatUntil);
   const appointments = [];
@@ -42,7 +42,7 @@ const generateRecurringAppointments = async (data) => {
     const planningData = await planningService.calculatePlanning(
       appointment._id,
     );
-    await planningService.savePlanning(planningData.appointment, planningData);
+    await planningService.savePlanning(planningData.appointment, planningData ,true,lang);
   }
 
   const response = {
@@ -53,7 +53,7 @@ const generateRecurringAppointments = async (data) => {
   return response;
 };
 
-const createAppointment = async ({ data, userId }) => {
+const createAppointment = async ({ data, userId,lang }) => {
   if (!data) {
     throw new AppError("Appointment data is required", 400, "MISSING_DATA");
   }
@@ -71,7 +71,7 @@ const createAppointment = async ({ data, userId }) => {
   const planningData = await planningService.calculatePlanning(
     newAppointment._id,
   );
-  await planningService.savePlanning(planningData.appointment, planningData);
+  await planningService.savePlanning(planningData.appointment, planningData,true,lang);
   return newAppointment;
 };
 
@@ -241,7 +241,7 @@ const getAppointmentSeries = async ({ appointmentId, userId }) => {
   }).sort({ arrivalTime: 1 });
 };
 
-const updateSingleAppointment = async ({ id, userId, data }) => {
+const updateSingleAppointment = async ({ id, userId, data,lang }) => {
   const appointment = await Appointment.findOne({ _id: id, userId });
   if (!appointment) {
     throw new AppError("No appointment found", 404, "APPOINTMENT_NOT_FOUND");
@@ -267,12 +267,12 @@ const updateSingleAppointment = async ({ id, userId, data }) => {
     const planningData = await planningService.calculatePlanning(
       appointment._id,
     );
-    await planningService.savePlanning(planningData.appointment, planningData);
+    await planningService.savePlanning(planningData.appointment, planningData ,true,lang);
   }
   return appointment;
 };
 
-const updateAppointmentSeries = async ({ id, userId, data }) => {
+const updateAppointmentSeries = async ({ id, userId, data ,lang}) => {
   if (data.arrivalTime) {
     throw new AppError(
       "You cannot update the arrival time of a whole series! Update single appointments instead.",
@@ -345,6 +345,8 @@ const updateAppointmentSeries = async ({ id, userId, data }) => {
       await planningService.savePlanning(
         planningData.appointment,
         planningData,
+        true,
+        lang
       );
     }
   }

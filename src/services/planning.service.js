@@ -80,6 +80,7 @@ const savePlanning = async (
   appointment,
   planningData,
   scheduleRecalculation = true,
+  lang = "ar",
 ) => {
   const existingCalculation = await Calculation.findOne({
     appointmentId: appointment._id,
@@ -112,6 +113,7 @@ const savePlanning = async (
       departureTime: planningData.departureTime,
       weatherCondition: planningData.weatherCondition,
       weatherSeverity: planningData.weatherSeverity,
+      lang,
     },
     {
       upsert: true,
@@ -154,6 +156,7 @@ const savePlanning = async (
     const notifications = await schedulePlanningNotifications({
       appointment,
       departureTime: planningData.departureTime,
+      lang :calculation.lang,
     });
 
     calculation.preparationNotificationJobId =

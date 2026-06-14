@@ -49,7 +49,11 @@ const calculationSchema = new mongoose.Schema(
       type: String,
       default: "V1",
     },
-    
+    lang:{
+      type: String,
+      enum: ["en", "ar"],
+      default: "ar",
+    }
   },
   { timestamps: true }
 );

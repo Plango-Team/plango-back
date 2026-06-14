@@ -6,6 +6,22 @@ const schedulePlanningNotifications = async ({
   lang,
 }) => {
   const result = {};
+  const messages = {
+  ar: {
+    prepareTitle: "قوم البس",
+    prepareMessage: `موعد "${appointment.title}" اقترب.`,
+    leaveTitle: "انزل يلااا",
+    leaveMessage: `حان وقت المغادرة إلى "${appointment.title}".`,
+  },
+  en: {
+    prepareTitle: "Time to prepare",
+    prepareMessage: `Your appointment "${appointment.title}" is coming up soon.`,
+    leaveTitle: "Time to leave",
+    leaveMessage: `It's time to leave for "${appointment.title}".`,
+  },
+};
+
+const text = messages[lang] || messages.en;
 
   if (appointment.preparationTime > 0) {
     const preparationTime = new Date(
@@ -17,9 +33,9 @@ const schedulePlanningNotifications = async ({
       await notificationService.createNotification({
         recipient: appointment.userId,
 
-        title: "Time to prepare",
+        title: text.prepareTitle,
 
-        message: `Your appointment "${appointment.title}" is coming up soon.`,
+        message: text.prepareMessage,
 
         type: "appointment_preparation",
 
@@ -31,9 +47,9 @@ const schedulePlanningNotifications = async ({
     await notificationService.createNotification({
       recipient: appointment.userId,
 
-      title: "Time to leave",
+      title: text.leaveTitle,
 
-      message: `It's time to leave for "${appointment.title}".`,
+      message: text.leaveMessage,
 
       type: "appointment_departure",
 
