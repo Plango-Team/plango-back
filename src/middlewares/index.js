@@ -191,19 +191,19 @@ const rateLimiters = {
   }),
 
   emailChange: makeDualLimiter({
-    windowMs: 15 * 60 * 1000,  //
+    windowMs: 15 * 60 * 1000,
     idMax: 10,
     ipMax: 20,
   }),
 
   phoneChange: makeDualLimiter({
-    windowMs: 15 * 60 * 60 * 1000,
+    windowMs: 15 * 60 * 1000,
     idMax: 10,
     ipMax: 20,
   }),
 
   changePassword: makeDualLimiter({
-    windowMs: 15 * 60 * 60 * 1000,
+    windowMs: 30 * 60 * 1000,
     idMax: 10,
     ipMax: 20,
   }),

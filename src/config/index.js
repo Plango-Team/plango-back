@@ -1,7 +1,5 @@
 // We read from process.env (loaded by dotenv in server.js).
 
-const { Redirect } = require("twilio/lib/twiml/VoiceResponse");
-
 const config = {
   // Server
   port: process.env.PORT || 5000,
@@ -76,7 +74,7 @@ const config = {
 
 // Make sure the critical values are set before the app starts
 const checkRequired = () => {
-  const required = ['MONGODB_URI', 'JWT_SECRET'];
+  const required = ['MONGODB_URI', 'JWT_SECRET', 'RESEND_API_KEY'];
   const missing = required.filter((key) => !process.env[key]);
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);

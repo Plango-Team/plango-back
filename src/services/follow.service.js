@@ -1,4 +1,3 @@
-const { database } = require('firebase-admin');
 const Follow = require('../models/followModel');
 const User = require('../models/user.model');
 const AppError = require('../utils/appError');
