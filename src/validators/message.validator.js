@@ -1,6 +1,6 @@
 const { param } = require("express-validator");
 
-const validate = require("../middlewares/validate.middleware");
+const {validate} = require("../middlewares");
 
 const getMessagesValidator = [
   param("appointmentId")

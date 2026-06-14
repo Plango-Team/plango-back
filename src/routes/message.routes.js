@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const { getMessages } = require("../controllers/message.controller");
-const { protect } = require("../middlewares/auth.middleware");
+const { protect } = require('../middlewares');
 const { getMessagesValidator } = require("../validators/message.validator");
 
 router.get(

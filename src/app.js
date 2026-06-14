@@ -21,7 +21,6 @@ const taskRoutes = require('./routes/task.routes');
 const eventRoutes = require("./routes/event.routes");
 const appointmentInviteRoutes = require("./routes/appointmentInvite.routes");
 const notificationRoutes = require('./routes/notification.routes');
-// const messageRoutes = require('./routes/message.routes');
 const calendarRoutes = require('./routes/calendar.routes');
 const postRoutes = require('./routes/post.routes');
 const messageRoutes = require('./routes/message.routes');
@@ -89,9 +88,8 @@ app.use('/api', followRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/invites", appointmentInviteRoutes);
 app.use('/api/notifications', notificationRoutes);
-// app.use('/api/messages', messageRoutes);
-app.use('/api/calendar', calendarRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/calendar', calendarRoutes);
 // ── 404 Handler ───────────────────────────────────────────
 app.all('*', (req, res) => {
   res.status(404).json({
