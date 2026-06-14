@@ -137,6 +137,16 @@ const locales = {
     TASK_CREATION_FAILED:        'Failed to create task.',
     TASK_NOT_FOUND:              'Task not found.',
 
+    POST_CREATION_FAILED:        'Failed to create post.',
+    POST_NOT_FOUND:              'Post not found.',
+    POSTS_RETRIEVED:             'Posts retrieved successfully.',
+    POST_CREATED:               'Post created successfully.',
+    POST_UPDATED:               'Post updated successfully.',
+    POST_DELETED:               'Post deleted successfully.',
+
+    APPOINTMENT_NOT_FOUND:        'appointment not found.',
+    CHAT_ACCESS_DENIED:            'You do not have access to this chat.',
+
   },
 
   ar: {
@@ -265,6 +275,16 @@ const locales = {
     EXPIRED_APPOINTMENT:          'الموعد المرتبط قد حدث بالفعل.',
     TASK_CREATION_FAILED:        'فشل في إنشاء المهمة.',
     TASK_NOT_FOUND:              'المهمة غير موجودة.',
+
+    POST_CREATION_FAILED:        'فشل في إنشاء المنشور.',
+    POST_NOT_FOUND:              'المنشور غير موجود.',
+    POSTS_RETRIEVED:             'تم استرجاع المنشورات بنجاح.',
+    POST_CREATED:               'تم إنشاء المنشور بنجاح.',
+    POST_UPDATED:               'تم تحديث المنشور بنجاح.',
+    POST_DELETED:               'تم حذف المنشور بنجاح.',
+
+    APPOINTMENT_NOT_FOUND:        'الموعد غير موجود.',
+    CHAT_ACCESS_DENIED:            'ليس لديك صلاحية الوصول إلى هذه المحادثة.',
   },
 };
 

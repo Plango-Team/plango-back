@@ -5,7 +5,6 @@ const createNotification = require("./notification.service").createNotification;
 const Notification = require("../models/notificationModel");
 const notificationQueue = require("../jobs/queues/notification.queue");
 const { t } = require("../utils/i18n");
-const { not } = require("joi");
 
 const createTask = async ({ data, userId, lang }) => {
   if (!data) {
