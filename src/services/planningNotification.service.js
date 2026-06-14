@@ -7,10 +7,10 @@ const schedulePlanningNotifications = async ({
 }) => {
   const result = {};
 
-  if (appointment.preparationTimeMinutes > 0) {
+  if (appointment.preparationTime > 0) {
     const preparationTime = new Date(
       departureTime.getTime() -
-        appointment.preparationTimeMinutes * 60000,
+        appointment.preparationTime * 60000,
     );
 
     result.preparationNotification =
