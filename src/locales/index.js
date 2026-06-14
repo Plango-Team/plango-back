@@ -110,6 +110,12 @@ const locales = {
     PENDING:                    'Pending',
     FOLLOW_REQUEST_SENT:         'Follow request sent.',
     FOLLOW_REQUEST_CANCELLED:      'Follow request canceled',
+    NEW_FOLLOWER:              'New follower',
+    NEW_FOLLOWER_NOTIFICATION : '{{name}} started following you.',
+    NEW_FOLLOW_REQUEST:         'New follow request',
+    NEW_FOLLOW_REQUEST_NOTIFICATION: '{{name}} sent you a follow request.',
+    FOLLOW_REQUEST_ACCEPTED: 'Follow request accepted.',
+    FOLLOW_REQUEST_ACCEPTED_NOTIFICATION: '{{name}} accepted your follow request.',
 
     // ── task subjects ────────────────────────────────────────
     TASK_CREATED:                'Task created successfully.',
@@ -117,6 +123,11 @@ const locales = {
     TASK_DELETED:                'Task deleted successfully.',
     TASK_RETRIEVED:              'Task retrieved successfully.',
     TASK_NOT_FOUND:              'Task not found.',
+    TASK_DEADLINE_APPROACHING:   'Task deadline approaching.',
+    TASK_DEADLINE_APPROACHING_MESSAGE: 'Task "{{title}}" deadline is approaching.',
+    TASK_REMINDER: 'Task Reminder',
+    TASK_DEADLINE_REMINDER_MESSAGE: 'Your Task "{{title}}" deadline is now.',
+
 
     MISSING_DATA:                'Missing required data.',
     APPOINTMENT_NOT_FOUND:        'Linked appointment not found.',
@@ -124,6 +135,19 @@ const locales = {
     MISSING_DEADLINE:            'Deadline is required.',
     TASK_CREATION_FAILED:        'Failed to create task.',
     TASK_NOT_FOUND:              'Task not found.',
+
+    POST_CREATION_FAILED:        'Failed to create post.',
+    POST_NOT_FOUND:              'Post not found.',
+    POSTS_RETRIEVED:             'Posts retrieved successfully.',
+    POST_CREATED:               'Post created successfully.',
+    POST_UPDATED:               'Post updated successfully.',
+    POST_DELETED:               'Post deleted successfully.',
+
+    APPOINTMENT_NOT_FOUND:        'appointment not found.',
+    CHAT_ACCESS_DENIED:            'You do not have access to this chat.',
+    APPOINTMENT_CREATED:      'Appointment created successfully.',
+    EVENT_UPDATED:             'Event updated successfuly',
+    INVITIATION_SENT:            'Invitation sent successfully.',
 
   },
 
@@ -230,6 +254,12 @@ const locales = {
     PENDING:                    'معلق',
     FOLLOW_REQUEST_SENT:         'تم إرسال طلب المتابعة.',
     FOLLOW_REQUEST_CANCELLED:      'تم إلغاء طلب المتابعة.',
+    NEW_FOLLOWER:              'متابع جديد',
+    NEW_FOLLOWER_NOTIFICATION : '{{name}} بدأ بمتابعتك.',
+    NEW_FOLLOW_REQUEST:         'طلب متابعة جديد',
+    NEW_FOLLOW_REQUEST_NOTIFICATION: '{{name}} أرسل لك طلب متابعة.',
+    FOLLOW_REQUEST_ACCEPTED: 'تم قبول طلب المتابعة.',
+    FOLLOW_REQUEST_ACCEPTED_NOTIFICATION: '{{name}} قام بقبول طلب المتابعة.',
 
     // ── task subjects ────────────────────────────────────────
     TASK_CREATED:                'تم إنشاء المهمة بنجاح.',
@@ -237,6 +267,10 @@ const locales = {
     TASK_DELETED:                'تم حذف المهمة بنجاح.',
     TASK_RETRIEVED:              'تم استرجاع المهمة بنجاح.',
     TASK_NOT_FOUND:              'المهمة غير موجودة.',
+    TASK_DEADLINE_APPROACHING:   'موعد المهمة قادم.',
+    TASK_DEADLINE_APPROACHING_MESSAGE: 'موعد المهمة "{{title}}" قادم.',
+    TASK_REMINDER: 'تذكير بالمهمة',
+    TASK_DEADLINE_REMINDER_MESSAGE: 'موعد مهمتك "{{title}}" الآن.',
 
     MISSING_DATA:                'بيانات مطلوبة مفقودة.',
     MISSING_DEADLINE:            'الموعد النهائي مطلوب.',
@@ -244,6 +278,19 @@ const locales = {
     EXPIRED_APPOINTMENT:          'الموعد المرتبط قد حدث بالفعل.',
     TASK_CREATION_FAILED:        'فشل في إنشاء المهمة.',
     TASK_NOT_FOUND:              'المهمة غير موجودة.',
+
+    POST_CREATION_FAILED:        'فشل في إنشاء المنشور.',
+    POST_NOT_FOUND:              'المنشور غير موجود.',
+    POSTS_RETRIEVED:             'تم استرجاع المنشورات بنجاح.',
+    POST_CREATED:               'تم إنشاء المنشور بنجاح.',
+    POST_UPDATED:               'تم تحديث المنشور بنجاح.',
+    POST_DELETED:               'تم حذف المنشور بنجاح.',
+
+    APPOINTMENT_NOT_FOUND:        'الموعد غير موجود.',
+    CHAT_ACCESS_DENIED:            'ليس لديك صلاحية الوصول إلى هذه المحادثة.',
+    APPOINTMENT_CREATED:      'تم إنشاء الموعد بنجاح.',
+    EVENT_UPDATED:             'تم تحديث الحدث بنجاح.',
+    INVITIATION_SENT:            'تم إرسال الدعوة بنجاح.',
   },
 };
 

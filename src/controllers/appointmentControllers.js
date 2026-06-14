@@ -1,22 +1,20 @@
-const Appointment = require("../models/appointmentModel");
 const appointmentService = require("../services/appointment.service");
 const AppError = require("../utils/appError");
 const catchAsync = require("express-async-handler");
 const { sendSuccess } = require("../utils/helpers");
-const { Result } = require("express-validator");
 const { t } = require('../utils/i18n');
+
 
 exports.getAppointments = catchAsync(async (req, res) => {
   const userId = req.user._id;
   const { category, from, to } = req.query;
   
-  const appointments = await appointmentService.getAppointments({ userId, category,from,to, lang: req.lang });
-  //console.log(req.query.category);
-  console.log("Collection Name: ", Appointment.collection.name);
-console.log("DB Name: ", Appointment.db.name);
-  sendSuccess(res, 200, t(req.lang, 'success'), { results: appointments.length, appointments });
+  const appointments = await appointmentService.getAppointments({ userId, category, from, to, lang: req.lang });
   
+  sendSuccess(res, 200, t(req.lang, 'success'), { results: appointments.length, appointments });
 });
+
+
 exports.getAppointmentSeries = catchAsync(async (req, res) => {
   const { id } = req.params;
 
@@ -31,38 +29,69 @@ exports.getAppointmentSeries = catchAsync(async (req, res) => {
   });
 });
 
+
 exports.getAppointment = catchAsync(async (req, res) => {
   const userId = req.user._id;
-  const {id}  = req.params;
-  const appointment = await appointmentService.getAppointment({ id, userId }, req.lang);
+  const { id } = req.params;
+  
+  const appointment = await appointmentService.getSingleAppointment({ id, userId }, req.lang);
+  
   sendSuccess(res, 200, t(req.lang, 'success'), { appointment });
-
-
 });
 
-  exports.createAppointment = catchAsync(async (req, res) => {
-    const userId = req.user._id;  
-    const data = req.body;
 
-    const newAppointment = await appointmentService.createAppointment({ data, userId, lang: req.lang });
-    sendSuccess(res, 201, t(req.lang, 'APPOINTMENT_CREATED'), { appointment: newAppointment });
+exports.createAppointment = catchAsync(async (req, res) => {
+  const userId = req.user._id;  
+  const data = req.body;
 
+  const newAppointment = await appointmentService.createAppointment({ data, userId, lang: req.lang });
+  
+  sendSuccess(res, 201, t(req.lang, 'APPOINTMENT_CREATED'), { appointment: newAppointment });
 }); 
 
-exports.updateAppointment = catchAsync(async (req, res) => {
+
+exports.updateSingleAppointment = catchAsync(async (req, res, next) => {
   const userId = req.user._id;
-  const {id} = req.params;
+  const { id } = req.params;
   const data = req.body;
-  const updatedAppointment = await appointmentService.updateAppointment({ id, userId, data }, req.lang);
+
+  if (data.arrivalTime && new Date(data.arrivalTime) < new Date()) {
+    return next(new AppError(t(req.lang, 'Arrival time cannot be in the past'), 400));
+  }
+  
+  const updatedAppointment = await appointmentService.updateSingleAppointment({ id, userId, data, lang: req.lang });
+  
   sendSuccess(res, 200, t(req.lang, 'APPOINTMENT_UPDATED'), { appointment: updatedAppointment });
+});
+
+
+exports.updateAppointmentSeries = catchAsync(async (req, res, next) => {
+  const userId = req.user._id;
+  const { id } = req.params; 
+  const data = req.body;
+
+  const result = await appointmentService.updateAppointmentSeries({ id, userId, data, lang: req.lang });
 
   
+  sendSuccess(res, 200, t(req.lang, 'success'), { result });
 });
 
-exports.deleteAppointment = catchAsync(async (req, res) => {
+
+exports.deleteSingleAppointment = catchAsync(async (req, res) => {
   const userId = req.user._id;
-  const {id} = req.params;
-  await appointmentService.deleteAppointment({ id, userId }, req.lang);
+  const { id } = req.params;
+  
+  await appointmentService.deleteSingleAppointment({ id, userId }, req.lang);
+  
   sendSuccess(res, 200, t(req.lang, 'APPOINTMENT_DELETED'), null);
-
 });
+
+exports.deleteAppointmentSeries = catchAsync(async (req, res, next) => {
+  const userId = req.user._id;
+  const { id } = req.params;
+
+  const result = await appointmentService.deleteAppointmentSeries({ id, userId });
+
+  sendSuccess(res, 200, 'Whole series deleted successfully', { result });
+});
+

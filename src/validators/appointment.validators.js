@@ -1,10 +1,10 @@
-const { body, param,query } = require('express-validator');
+const { body, param } = require('express-validator');
 
 // Reusable enums
-const categories = ["work", "personal", "travel", "other"];
-const transportationTypes = ["car", "walking", "biking", "other"];
+const transportationTypes = ["driving", "walking","bicycling", "other"];
 const repeatTypes = ["daily", "weekly", "monthly"];
-const statusTypes = ["scheduled", "completed", "canceled"];
+const arrivalBufferOptions = [0, 5, 10, 15, 30];
+const preparationOptions = [0, 10, 20, 30, 45, 60];
 
 // Location validator helper
 const locationValidator = (fieldName) => [
@@ -25,6 +25,28 @@ const locationValidator = (fieldName) => [
     .isFloat()
     .withMessage(`${fieldName} latitude must be a number`),
 ];
+
+const optionalLocationValidator = (fieldName) => [
+    body(`${fieldName}.addressName`)
+    .optional()
+    .isString()
+    .withMessage(`${fieldName} addressName must be a string`),
+
+    body(`${fieldName}.coordinates`)
+    .if((value, { req }) => req.body[fieldName] !== undefined)
+    .isArray({ min: 2, max: 2 })
+    .withMessage(`${fieldName} coordinates must be [lng, lat]`),
+
+    body(`${fieldName}.coordinates.0`)
+    .if((value, { req }) => req.body[fieldName] !== undefined)
+    .isFloat()
+    .withMessage(`${fieldName} longitude must be a number`),
+
+    body(`${fieldName}.coordinates.1`)
+    .if((value, { req }) => req.body[fieldName] !== undefined)
+    .isFloat()
+    .withMessage(`${fieldName} latitude must be a number`),
+];
 // Create Appointment validator
 const createAppointment = [
     body('title')
@@ -37,27 +59,20 @@ const createAppointment = [
     .trim()
     .isLength({ max: 500 }).withMessage('Description cannot exceed 500 characters'),
 
-    body('category')
-    .optional()
-    .isIn(categories).withMessage(`Category must be one of: ${categories.join(', ')}`),
-
     body('transportation')
     .notEmpty().withMessage('Transportation method is required')
     .isIn(transportationTypes).withMessage(`Transportation must be one of: ${transportationTypes.join(', ')}`),
-
-    body('estimatedTravelTime')
-    .notEmpty().withMessage('Estimated travel time is required')
-    .isFloat({ min: 0 }).withMessage('Estimated travel time must be a positive number'),
 
     body('arrivalTime')
     .notEmpty().withMessage('Arrival time is required')
     .isISO8601().withMessage('Arrival time must be a valid date'),
 
+    body('actualDepartureTime')
+    .optional()
+    .isISO8601().withMessage('Actual departure time must be a valid date'),
+
     ...locationValidator('startLocation'),
     ...locationValidator('destinationLocation'),
-
-    body('coordinates')
-    .notEmpty().withMessage('Coordinates are required'),
 
     body('isRecurring')
     .optional()
@@ -71,13 +86,19 @@ const createAppointment = [
     .optional()
     .isISO8601().withMessage('Repeat until must be a valid date'),
 
-    body('status')
+    body('arrivalBuffer')
     .optional()
-    .isIn(statusTypes).withMessage(`Status must be one of: ${statusTypes.join(', ')}`),
+    .isIn(arrivalBufferOptions)
+    .withMessage(`Arrival buffer must be one of: ${arrivalBufferOptions.join(', ')}`),
+
+    body('preparationTime')
+    .optional()
+    .isIn(preparationOptions)
+    .withMessage(`Preparation time must be one of: ${preparationOptions.join(', ')}`),
 ];
 
 // Update Appointment validator (all optional)
-const updateAppointment = [
+const updateSingleAppointment = [
     body('title')
     .optional()
     .trim()
@@ -88,62 +109,74 @@ const updateAppointment = [
     .trim()
     .isLength({ max: 500 }).withMessage('Description cannot exceed 500 characters'),
 
-    body('category')
+    body('eventId')
     .optional()
-    .isIn(categories).withMessage(`Category must be one of: ${categories.join(', ')}`),
+    .isMongoId().withMessage('Event ID must be a valid MongoDB ID'),
 
     body('transportation')
     .optional()
     .isIn(transportationTypes).withMessage(`Transportation must be one of: ${transportationTypes.join(', ')}`),
 
-    body('estimatedTravelTime')
-    .optional()
-    .isFloat({ min: 0 }).withMessage('Estimated travel time must be a positive number'),
-
     body('arrivalTime')
     .optional()
     .isISO8601().withMessage('Arrival time must be a valid date'),
 
-    body('isRecurring')
+    body('actualDepartureTime')
     .optional()
-    .isBoolean().withMessage('isRecurring must be true or false'),
+    .isISO8601().withMessage('Actual departure time must be a valid date'),
 
-    body('repeatType')
-    .optional()
-    .isIn(repeatTypes).withMessage(`Repeat type must be one of: ${repeatTypes.join(', ')}`),
-    
+    ...optionalLocationValidator('startLocation'),
+    ...optionalLocationValidator('destinationLocation'),
+
+
     body('repeatUntil')
     .optional()
     .isISO8601().withMessage('Repeat until must be a valid date'),
-    
-    body('status')
+
+    body('startedTrip')
     .optional()
-    .isIn(statusTypes).withMessage(`Status must be one of: ${statusTypes.join(', ')}`),
+    .isBoolean()
+    .withMessage('startedTrip must be true or false'),
+
+    body('arrivalBuffer')
+    .optional()
+    .isIn(arrivalBufferOptions)
+    .withMessage(`Arrival buffer must be one of: ${arrivalBufferOptions.join(', ')}`),
+
+    body('preparationTime')
+    .optional()
+    .isIn(preparationOptions)
+    .withMessage(`Preparation time must be one of: ${preparationOptions.join(', ')}`),
+
+    body('isCompleted')
+    .optional()
+    .isBoolean()
+    .withMessage('isCompleted must be true or false'),
+    
 ];
 
 // Get Appointment by ID validator
+// Get Appointment by ID validator
 const getAppointment = [
     param('id')
-    .isHexadecimal().withMessage('Invalid appointment ID format')
-    .isLength({ min: 24, max: 24 }).withMessage('Appointment ID must be a valid MongoDB ID'),
+    .isMongoId()
+    .withMessage('Appointment ID must be a valid MongoDB ID'),
 ];
 
-const getAppointmentsValidator = [
-    query("category")
-    .optional()
-    .isIn(["work", "personal", "travel", "other"])
-    .withMessage("Invalid category"),
-];
+const getAppointmentsValidator = [];
 const getAppointmentSeriesValidator = [
-    param("id")
+    param('id')
     .isMongoId()
-    .withMessage("Invalid appointment id"),
+    .withMessage('Invalid appointment id'),
 ];
+
+const updateAppointmentSeries = updateSingleAppointment;
 
 module.exports = {
     createAppointment,
-    updateAppointment,
+    updateSingleAppointment,
+    updateAppointmentSeries,
     getAppointment,
     getAppointmentsValidator,
-    getAppointmentSeriesValidator
+    getAppointmentSeriesValidator,
 };
