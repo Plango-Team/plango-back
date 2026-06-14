@@ -18,20 +18,23 @@ const getWeatherData = async (lat, lng) => {
   }
 
   const condition = data.current.condition.text.toLowerCase();
-
   let weatherSeverity = 0;
+  let weatherCondition = "Clear";
 
   if (
     condition.includes("storm") ||
-    condition.includes("thunder")
+    condition.includes("thunder") ||
+    condition.includes("sand")
   ) {
     weatherSeverity = 3;
+    weatherCondition = "Storm";
   } else if (
     condition.includes("rain") ||
     condition.includes("drizzle") ||
     condition.includes("shower")
   ) {
     weatherSeverity = 2;
+    weatherCondition = "Rain";
   } else if (
     condition.includes("cloud") ||
     condition.includes("overcast") ||
@@ -39,10 +42,11 @@ const getWeatherData = async (lat, lng) => {
     condition.includes("fog")
   ) {
     weatherSeverity = 1;
+    weatherCondition = "Cloudy";
   }
 
   return {
-    weatherCondition: condition,
+    weatherCondition,
     weatherSeverity,
   };
 };

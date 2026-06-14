@@ -8,7 +8,7 @@ const weatherService = require("./weather.service");
 const {
   schedulePlanningNotifications,
 } = require("./planningNotification.service");
-const notiticationQueue = require("../jobs/queues/notification.queue");
+const notificationQueue = require("../jobs/queues/notification.queue");
 const planningQueue = require("../jobs/queues/planing.queue");
 const {
   getRecalculationLeadTime,
@@ -16,7 +16,7 @@ const {
   getRecalculationDelay,
 } = require("../utils/planning");
 
-const { getHolidayValue } = require("../utils/holiday");
+const { isHoly } = require("../utils/holiday");
 const AppError = require("../utils/appError");
 
 const calculatePlanning = async (appointmentId) => {
@@ -40,10 +40,10 @@ const calculatePlanning = async (appointmentId) => {
 
   const targetArrivalTime = new Date(
     appointment.arrivalTime.getTime() -
-      appointment.arrivalBufferMinutes * 60000,
+      appointment.arrivalBuffer * 60000,
   );
 
-  const isHoliday = getHolidayValue(targetArrivalTime);
+  const isHoliday = isHoly(targetArrivalTime);
 
   const bufferMinutes = await mlService.predictBufferMinutes({
     currentDuration: routeData.durationMinutes,
@@ -60,7 +60,7 @@ const calculatePlanning = async (appointmentId) => {
   );
 
   const preparationNotificationTime = new Date(
-    departureTime.getTime() - appointment.preparationTimeMinutes * 60000,
+    departureTime.getTime() - appointment.preparationTime * 60000,
   );
 
   return {
@@ -80,6 +80,7 @@ const savePlanning = async (
   appointment,
   planningData,
   scheduleRecalculation = true,
+  lang = "ar",
 ) => {
   const existingCalculation = await Calculation.findOne({
     appointmentId: appointment._id,
@@ -112,6 +113,7 @@ const savePlanning = async (
       departureTime: planningData.departureTime,
       weatherCondition: planningData.weatherCondition,
       weatherSeverity: planningData.weatherSeverity,
+      lang,
     },
     {
       upsert: true,
@@ -154,6 +156,7 @@ const savePlanning = async (
     const notifications = await schedulePlanningNotifications({
       appointment,
       departureTime: planningData.departureTime,
+      lang :calculation.lang,
     });
 
     calculation.preparationNotificationJobId =

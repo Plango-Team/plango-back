@@ -31,6 +31,12 @@ router.patch(
   validate,
   notificationController.markNotificationAsRead
 );
+router.post(
+  "/fcm-token",
+  SaveFcmTokenValidation,
+  validate,
+  notificationController.saveFcmToken
+);
 
 router.post(
   "/fcm-token",

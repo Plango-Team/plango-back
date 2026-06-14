@@ -59,7 +59,7 @@ exports.updateSingleAppointment = catchAsync(async (req, res, next) => {
     return next(new AppError(t(req.lang, 'Arrival time cannot be in the past'), 400));
   }
   
-  const updatedAppointment = await appointmentService.updateSingleAppointment({ id, userId, data }, req.lang);
+  const updatedAppointment = await appointmentService.updateSingleAppointment({ id, userId, data, lang: req.lang });
   
   sendSuccess(res, 200, t(req.lang, 'APPOINTMENT_UPDATED'), { appointment: updatedAppointment });
 });
@@ -70,7 +70,7 @@ exports.updateAppointmentSeries = catchAsync(async (req, res, next) => {
   const { id } = req.params; 
   const data = req.body;
 
-  const result = await appointmentService.updateAppointmentSeries({ id, userId, data });
+  const result = await appointmentService.updateAppointmentSeries({ id, userId, data, lang: req.lang });
 
   
   sendSuccess(res, 200, t(req.lang, 'success'), { result });
