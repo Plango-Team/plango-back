@@ -85,6 +85,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api', followRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api', followRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/invites", appointmentInviteRoutes);
 app.use('/api/notifications', notificationRoutes);
