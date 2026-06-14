@@ -83,6 +83,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/posts', postRoutes);
 app.use('/api', followRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api', followRoutes);
