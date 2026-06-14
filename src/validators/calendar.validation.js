@@ -14,11 +14,11 @@ exports.getCalendarValidator = [
     .isISO8601()
     .withMessage("invalid endDate")
     .custom((value, { req }) => {
-      const startDate = new Date(req.query.startDate);
+      const startDate = new Date(req.query.from);
       const endDate = new Date(value);
 
       if (startDate > endDate) {
-        throw new Error("endDate must be greater than or equal startDate");
+        throw new Error("'to' must be greater than or equal to 'from'");
       }
 
       return true;

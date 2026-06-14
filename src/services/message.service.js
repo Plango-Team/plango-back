@@ -1,6 +1,6 @@
 const Message = require("../models/messageModel");
 const Appointment = require("../models/appointmentModel");
-// const AppointmentInvite = require("../models/appointmentInvite.model");
+const AppointmentInvite = require("../models/appointmentInvite.model");
 const AppError = require("../utils/appError");
 const {t} = require("../utils/i18n");
 

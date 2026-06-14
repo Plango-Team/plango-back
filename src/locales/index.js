@@ -146,6 +146,9 @@ const locales = {
 
     APPOINTMENT_NOT_FOUND:        'appointment not found.',
     CHAT_ACCESS_DENIED:            'You do not have access to this chat.',
+    APPOINTMENT_CREATED:      'Appointment created successfully.',
+    EVENT_UPDATED:             'Event updated successfuly',
+    INVITIATION_SENT:            'Invitation sent successfully.',
 
   },
 
@@ -285,6 +288,9 @@ const locales = {
 
     APPOINTMENT_NOT_FOUND:        'الموعد غير موجود.',
     CHAT_ACCESS_DENIED:            'ليس لديك صلاحية الوصول إلى هذه المحادثة.',
+    APPOINTMENT_CREATED:      'تم إنشاء الموعد بنجاح.',
+    EVENT_UPDATED:             'تم تحديث الحدث بنجاح.',
+    INVITIATION_SENT:            'تم إرسال الدعوة بنجاح.',
   },
 };
 

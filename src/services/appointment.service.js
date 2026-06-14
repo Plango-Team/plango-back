@@ -58,7 +58,7 @@ const createAppointment = async ({ data, userId,lang }) => {
     throw new AppError("Appointment data is required", 400, "MISSING_DATA");
   }
   if (data.isRecurring) {
-    return await generateRecurringAppointments({ ...data, userId });
+    return await generateRecurringAppointments({ ...data, userId },lang);
   }
   const newAppointment = await Appointment.create({ ...data, userId });
   if (!newAppointment) {
@@ -378,7 +378,7 @@ const deleteAppointmentSeries = async ({ id, userId }) => {
   }
 
   if (!appointment.recurrenceId) {
-    await deleteSingleAppointment({ id, userId });
+    return await deleteSingleAppointment({ id, userId });
   }
   const appointmentsToDelete = await Appointment.find({
     recurrenceId: appointment.recurrenceId,

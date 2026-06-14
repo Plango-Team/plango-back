@@ -14,7 +14,7 @@ let io;
 const initializeSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: config.CLIENT_URL,
+      origin: config.clientUrl,
       credentials: true,
     },
   });
@@ -28,6 +28,10 @@ const initializeSocket = (server) => {
       }
 
       const decoded = verifyToken(token);
+
+      if (!decoded) {
+        return next(new Error("Unauthorized"));
+      }
 
       socket.user = decoded;
 

@@ -38,12 +38,6 @@ router.post(
   notificationController.saveFcmToken
 );
 
-router.post(
-  "/fcm-token",
-  SaveFcmTokenValidation,
-  validate,
-  notificationController.saveFcmToken
-);
 
 router.get("/test", notificationController.testNotification);
 

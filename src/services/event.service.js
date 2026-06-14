@@ -1,6 +1,8 @@
 const Event = require("../models/eventModel");
 const Appointment = require("../models/appointmentModel");
 const AppError = require("../utils/appError");
+const AppointmentService = require("./appointment.service");
+const planningService = require("./planning.service");
 
 const getEvents = async ({
   category,
@@ -142,6 +144,7 @@ const addEventToSchedule = async ({
   userId,
   startLocation,
   transportation,
+  lang,
 }) => {
   const event = await Event.findOne({ _id: eventId, isActive: true });
   if (!event) {
@@ -156,27 +159,25 @@ const addEventToSchedule = async ({
     );
   }
 
-  const newAppointment = new Appointment({
-    title: event.title,
-    description: event.description,
-    category: "other",
-    transportation,
-    arrivalTime: event.startDate, // ميعاد بداية الفعالية هو ميعاد وصول اليوزر المطلوب
-    startLocation,
-    destinationLocation: {
-      addressName: event.location.addressName,
-      fullAddress: event.location.fullAddress,
-      type: "Point",
-      coordinates: event.location.coordinates,
+  return await appointmentService.createAppointment({
+    data: {
+      title: event.title,
+      description: event.description,
+      category: "other",
+      transportation,
+      arrivalTime: event.startDate,
+      startLocation,
+      destinationLocation: {
+        addressName: event.location.addressName,
+        fullAddress: event.location.fullAddress,
+        type: "Point",
+        coordinates: event.location.coordinates,
+      },
+      eventId: event._id,
     },
     userId,
-    eventId: event._id,
+    lang,
   });
-
-  await newAppointment.calculateTravelTime();
-  await newAppointment.save();
-
-  return newAppointment;
 };
 
 const createEvent = async ({ data, companyId }) => {
@@ -190,7 +191,7 @@ const getCompanyEvents = async ({ companyId }) => {
   return await Event.find({ companyId }).sort({ startDate: 1 });
 };
 
-const updateEvent = async ({ id, companyId, data }) => {
+const updateEvent = async ({ id, companyId, data, lang }) => {
   const event = await Event.findOneAndUpdate({ _id: id, companyId }, data, {
     new: true,
     runValidators: true,
@@ -203,7 +204,7 @@ const updateEvent = async ({ id, companyId, data }) => {
       "EVENT_NOT_FOUND",
     );
   }
-  await updateLinkedAppointments(event);
+  await updateLinkedAppointments(event, lang);
   return event;
 };
 
@@ -242,10 +243,12 @@ const toggleEventStatus = async ({ id, companyId }) => {
   return event;
 };
 
-const updateLinkedAppointments = async (event) => {
-  const appointments = await Appointment.find({ eventId: event._id });
+const updateLinkedAppointments = async (event, lang = "ar") => {
+  const appointments = await Appointment.find({
+    eventId: event._id,
+  });
 
-  if (!appointments || appointments.length === 0) return;
+  if (!appointments.length) return;
 
   const updatePromises = appointments.map(async (app) => {
     app.title = event.title;
@@ -260,8 +263,20 @@ const updateLinkedAppointments = async (event) => {
     };
 
     await app.calculateTravelTime();
+    await app.save();
 
-    return app.save();
+    const planningData = await planningService.calculatePlanning(
+      app._id,
+    );
+
+    await planningService.savePlanning(
+      planningData.appointment,
+      planningData,
+      true,
+      lang,
+    );
+
+    return app;
   });
 
   await Promise.all(updatePromises);
