@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const eventController = require("../controllers/event.controllers");
 const { protect, restrictTo } = require("../middlewares/index");
+const { default: mongoose } = require("mongoose");
 
 router.get("/", eventController.getEvents);
 router.get("/:id", eventController.getEvent);

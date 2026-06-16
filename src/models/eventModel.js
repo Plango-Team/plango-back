@@ -57,6 +57,11 @@ const eventSchema = new mongoose.Schema(
       type: Number,
       min: [0, "Price cannot be negative"],
     },
+    visibility: {
+  type: String,
+  enum: ['public', 'private'],
+  default: 'public'
+}
   },
   {
     timestamps: true,
@@ -66,6 +71,9 @@ const eventSchema = new mongoose.Schema(
 );
 
 // indexs
+
+eventSchema.index({ title: 1, companyId: 1, startDate: 1 }, { unique: true });
+
 eventSchema.index({ location: "2dsphere" });
 
 eventSchema.index({ startDate: 1, category: 1 });
@@ -76,6 +84,14 @@ eventSchema.virtual("status").get(function () {
   if (this.endDate < new Date()) return "expired";
   if (this.startDate > new Date()) return "upcoming";
   return "ongoing";
+});
+
+
+eventSchema.virtual("attendeesCount", {
+  ref: "Appointment",      
+  localField: "_id",       
+  foreignField: "eventId", 
+  count: true,             
 });
 
 // ── Hooks ────────────────────────────────────────────────

@@ -4,8 +4,10 @@ const eventService = require("../services/event.service");
 const { t } = require("../utils/i18n");
 
 exports.getEvents = catchAsync(async (req, res) => {
+  console.log("Current user in getEvents:", req.user);
   //  كل الفلاتر بما فيها إحداثيات اليوزر الحالية ونوع السعر
   const { category, from, to, priceType, lng, lat } = req.query;
+  const currentUserId = req.user ? req.user._id : null;
 
   const events = await eventService.getEvents({
     category,
@@ -15,6 +17,7 @@ exports.getEvents = catchAsync(async (req, res) => {
     lng,
     lat,
     isActive: true,
+    currentUserId,
   });
 
   sendSuccess(res, 200, t(req.lang, "success"), {

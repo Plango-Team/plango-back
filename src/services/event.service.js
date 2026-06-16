@@ -1,5 +1,7 @@
 const Event = require("../models/eventModel");
+const appointmentService = require("./appointment.service");
 const Appointment = require("../models/appointmentModel");
+const mongoose = require("mongoose");
 const AppError = require("../utils/appError");
 
 const getEvents = async ({
@@ -10,8 +12,11 @@ const getEvents = async ({
   priceType,
   lng,
   lat,
+  currentUserId,
 }) => {
   const pipeline = [];
+
+  const userId = currentUserId ? new mongoose.Types.ObjectId(currentUserId) : null;
 
   //   الـ GeoNear لحساب المسافة والترتيب التلقائي للأقرب جغرافياً
   if (lng && lat) {
@@ -58,6 +63,50 @@ const getEvents = async ({
     pipeline.push({ $match: matchFilters });
   }
 
+  if (userId) {
+    pipeline.push({
+      $lookup: {
+        from: "follows",
+        let: { companyId: "$companyId" },
+        pipeline: [
+          { 
+            $match: { 
+              $expr: { 
+                $and: [
+                  { $eq: ["$following", "$$companyId"] }, 
+                  { $eq: ["$follower", userId] }, 
+                  { $eq: ["$status", "accepted"] } 
+                ]
+              }
+            }
+          }
+        ],
+        as: "isFollowing"
+      }
+    });
+
+    pipeline.push({
+  $match: {
+    $or: [
+      { visibility: "public" },
+      { 
+        $and: [
+          { visibility: "private" },
+          { 
+            $expr: { 
+              $ne: ["$isFollowing", []] 
+            } 
+          }
+        ]
+      }
+    ]
+  }
+});
+  } else {
+    
+    pipeline.push({ $match: { visibility: "public" } });
+  }
+  
   pipeline.push({
     $lookup: {
       from: "users",
@@ -68,17 +117,28 @@ const getEvents = async ({
   });
 
   pipeline.push(
-    { $unwind: "$companyId" },
-    {
-      $project: {
-        "companyId.password": 0, // تأمين البيانات للشركة
-        "companyId.role": 0,
-        "companyId.createdAt": 0,
-        "companyId.updatedAt": 0,
-        "companyId.__v": 0,
-      },
+  { $unwind: "$companyId" },
+  {
+    $project: {
+      title: 1,
+      description: 1,
+      category: 1,
+      startDate: 1,
+      endDate: 1,
+      price: 1,
+      distance: 1,
+      status: 1,
+      
+      // بيانات الشركة
+      "companyId._id": 1,
+      "companyId.name": 1,
+      "companyId.username": 1,
+      "companyId.email": 1,
+      "companyId.bio": 1,
+      "companyId.location": 1
     },
-  );
+  },
+);
 
   pipeline.push({
     $addFields: {
@@ -120,8 +180,8 @@ const getEvents = async ({
 const getEvent = async ({ id }) => {
   const event = await Event.findOne({ _id: id, isActive: true }).populate(
     "companyId",
-    "name email",
-  );
+    "name email ",
+  ).populate("attendeesCount");
 
   if (!event) {
     throw new AppError(
@@ -142,6 +202,7 @@ const addEventToSchedule = async ({
   userId,
   startLocation,
   transportation,
+  lang,
 }) => {
   const event = await Event.findOne({ _id: eventId, isActive: true });
   if (!event) {
@@ -156,27 +217,25 @@ const addEventToSchedule = async ({
     );
   }
 
-  const newAppointment = new Appointment({
-    title: event.title,
-    description: event.description,
-    category: "other",
-    transportation,
-    arrivalTime: event.startDate, // ميعاد بداية الفعالية هو ميعاد وصول اليوزر المطلوب
-    startLocation,
-    destinationLocation: {
-      addressName: event.location.addressName,
-      fullAddress: event.location.fullAddress,
-      type: "Point",
-      coordinates: event.location.coordinates,
+  return await appointmentService.createAppointment({
+    data: {
+      title: event.title,
+      description: event.description,
+      category: "other",
+      transportation,
+      arrivalTime: event.startDate,
+      startLocation,
+      destinationLocation: {
+        addressName: event.location.addressName,
+        fullAddress: event.location.fullAddress,
+        type: "Point",
+        coordinates: event.location.coordinates,
+      },
+      eventId: event._id,
     },
     userId,
-    eventId: event._id,
+    lang,
   });
-
-  await newAppointment.calculateTravelTime();
-  await newAppointment.save();
-
-  return newAppointment;
 };
 
 const createEvent = async ({ data, companyId }) => {
