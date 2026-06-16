@@ -11,6 +11,19 @@ const {
 
 let io;
 
+const getTokenFromCookieHeader = (cookieHeader = "") => {
+  const tokenCookie = cookieHeader
+    .split(";")
+    .map((cookie) => cookie.trim())
+    .find((cookie) => cookie.startsWith("token="));
+
+  if (!tokenCookie) {
+    return null;
+  }
+
+  return decodeURIComponent(tokenCookie.slice("token=".length));
+};
+
 const initializeSocket = (server) => {
   io = new Server(server, {
     cors: {
@@ -21,7 +34,9 @@ const initializeSocket = (server) => {
 
   io.use((socket, next) => {
     try {
-      const token = socket.handshake.auth?.token;
+      const token =
+        socket.handshake.auth?.token ||
+        getTokenFromCookieHeader(socket.handshake.headers.cookie);
 
       if (!token) {
         return next(new Error("Unauthorized"));
