@@ -1,7 +1,7 @@
 const Event = require("../models/eventModel");
 const Appointment = require("../models/appointmentModel");
 const AppError = require("../utils/appError");
-const AppointmentService = require("./appointment.service");
+const appointmentService = require("./appointment.service");
 const planningService = require("./planning.service");
 
 const getEvents = async ({
