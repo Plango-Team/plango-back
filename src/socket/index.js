@@ -1,7 +1,7 @@
 const { Server } = require("socket.io");
 const registerChatHandlers = require("./chat.handler");
 
-const config = require("../config");
+const { config } = require("../config");
 const { verifyToken } = require("../utils/helpers");
 
 const {
