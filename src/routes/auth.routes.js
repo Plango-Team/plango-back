@@ -3,6 +3,7 @@ const passport = require('passport');
 const router = express.Router();
 
 const ctrl = require('../controllers/auth.controller');
+const { config } = require('../config');
 const { protect, restrictTo, validate, rateLimiters } = require('../middlewares');
 const v = require('../validators/auth.validators');
 
@@ -25,7 +26,10 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 // Step 2: Google redirects back here after user approves
 router.get(
   '/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: '/auth/login?error=google_failed' }),
+  passport.authenticate('google', {
+    session: false,
+    failureRedirect: `${config.clientUrl}/auth/login?error=google_failed`,
+  }),
   ctrl.googleCallback
 );
 
