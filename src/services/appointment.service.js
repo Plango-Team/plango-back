@@ -9,7 +9,7 @@ const generateRecurringAppointments = async (data,lang) => {
   let end = new Date(data.repeatUntil);
   const appointments = [];
   const recurrenceId = data.isRecurring ? new mongoose.Types.ObjectId() : null;
-
+  
   if (current > end) return [];
 
   const dummyAppt = new Appointment({ ...data });
@@ -26,7 +26,7 @@ const generateRecurringAppointments = async (data,lang) => {
       caloriesBurned: dummyAppt.caloriesBurned,
       distanceInMeters: dummyAppt.distanceInMeters, // ✨ متناسق مع تعديل الموديل
     });
-
+    
     let nextDate = new Date(current);
     if (data.repeatType === "daily") {
       nextDate.setDate(nextDate.getDate() + 1);
@@ -80,19 +80,22 @@ const getAppointments = async ({ userId, from, to }) => {
     throw new AppError("unauthorized", 401, "UNAUTHORIZED");
   }
 
+  
   const acceptedInvites = await AppointmentInvite.find({
     receiverId: userId,
     status: "accepted",
   });
 
-  const acceptedAppointmentIds = acceptedInvites.map(
-    (invite) => invite.appointmentId,
-  );
+  const acceptedAppointmentIds = acceptedInvites.map((invite) => invite.appointmentId);
 
   const filter = {
-    $or: [{ userId: userId }, { _id: { $in: acceptedAppointmentIds } }],
+    $or: [
+      { userId: userId },
+      { _id: { $in: acceptedAppointmentIds } },
+    ],
   };
 
+  
   if (from || to) {
     filter.arrivalTime = {};
     if (from) filter.arrivalTime.$gte = new Date(from);
@@ -105,37 +108,26 @@ const getAppointments = async ({ userId, from, to }) => {
   }
 
   const result = appointments.map((appointment) => {
-    const invite = acceptedInvites.find((inv) =>
-      inv.appointmentId.equals(appointment._id),
-    );
+    const invite = acceptedInvites.find((inv) => inv.appointmentId.equals(appointment._id));
 
+    
     if (!invite) {
       return appointment;
     }
 
+    
     const appointmentObj = appointment.toObject({ virtuals: true });
 
-    appointmentObj.startLocation =
-      invite.startLocation || appointmentObj.startLocation;
-    appointmentObj.transportation =
-      invite.transportation || appointmentObj.transportation;
-    appointmentObj.estimatedTravelTime =
-      invite.estimatedTravelTime !== undefined
-        ? invite.estimatedTravelTime
-        : appointmentObj.estimatedTravelTime;
+  
+    appointmentObj.startLocation = invite.startLocation || appointmentObj.startLocation;
+    appointmentObj.transportation = invite.transportation || appointmentObj.transportation;
+    appointmentObj.estimatedTravelTime = invite.estimatedTravelTime !== undefined ? invite.estimatedTravelTime : appointmentObj.estimatedTravelTime;
     appointmentObj.polyline = invite.polyline || appointmentObj.polyline;
-    appointmentObj.stepsCount =
-      invite.stepsCount !== undefined
-        ? invite.stepsCount
-        : appointmentObj.stepsCount;
-    appointmentObj.caloriesBurned =
-      invite.caloriesBurned !== undefined
-        ? invite.caloriesBurned
-        : appointmentObj.caloriesBurned;
+    appointmentObj.stepsCount = invite.stepsCount !== undefined ? invite.stepsCount : appointmentObj.stepsCount;
+    appointmentObj.caloriesBurned = invite.caloriesBurned !== undefined ? invite.caloriesBurned : appointmentObj.caloriesBurned;
 
-    appointmentObj.travelHours = +(
-      (appointmentObj.estimatedTravelTime || 0) / 60
-    ).toFixed(1);
+
+    appointmentObj.travelHours = +((appointmentObj.estimatedTravelTime || 0) / 60).toFixed(1);
 
     return appointmentObj;
   });
@@ -147,23 +139,19 @@ const getSingleAppointment = async ({ id, userId }) => {
   if (!userId) {
     throw new AppError("unauthorized", 401, "UNAUTHORIZED");
   }
-
+  
   const appointment = await Appointment.findById(id).populate({
-    path: "participants",
-    match: { status: "accepted" },
-    select: "receiverId -_id",
-    populate: {
-      path: "receiverId",
-      select: "name username",
-    },
+    path: 'participants',
+    match: { status: 'accepted' },
+    select: 'receiverId -_id', 
+    populate: { 
+      path: 'receiverId', 
+      select: 'name username' 
+    }
   });
 
   if (!appointment) {
-    throw new AppError(
-      "No appointment found with that ID",
-      404,
-      "APPOINTMENT_NOT_FOUND",
-    );
+    throw new AppError("No appointment found with that ID", 404, "APPOINTMENT_NOT_FOUND");
   }
 
   const invite = await AppointmentInvite.findOne({
@@ -173,11 +161,7 @@ const getSingleAppointment = async ({ id, userId }) => {
   });
 
   if (appointment.userId.toString() !== userId.toString() && !invite) {
-    throw new AppError(
-      "You do not have permission to view this appointment",
-      403,
-      "FORBIDDEN",
-    );
+    throw new AppError("You do not have permission to view this appointment", 403, "FORBIDDEN");
   }
 
   if (!invite) {
@@ -186,44 +170,28 @@ const getSingleAppointment = async ({ id, userId }) => {
 
   const appointmentObj = appointment.toObject({ virtuals: true });
 
-  appointmentObj.startLocation =
-    invite.startLocation || appointmentObj.startLocation;
-  appointmentObj.transportation =
-    invite.transportation || appointmentObj.transportation;
-  appointmentObj.estimatedTravelTime =
-    invite.estimatedTravelTime !== undefined
-      ? invite.estimatedTravelTime
-      : appointmentObj.estimatedTravelTime;
+  appointmentObj.startLocation = invite.startLocation || appointmentObj.startLocation;
+  appointmentObj.transportation = invite.transportation || appointmentObj.transportation;
+  appointmentObj.estimatedTravelTime = invite.estimatedTravelTime !== undefined ? invite.estimatedTravelTime : appointmentObj.estimatedTravelTime;
   appointmentObj.polyline = invite.polyline || appointmentObj.polyline;
-  appointmentObj.stepsCount =
-    invite.stepsCount !== undefined
-      ? invite.stepsCount
-      : appointmentObj.stepsCount;
-  appointmentObj.caloriesBurned =
-    invite.caloriesBurned !== undefined
-      ? invite.caloriesBurned
-      : appointmentObj.caloriesBurned;
+  appointmentObj.stepsCount = invite.stepsCount !== undefined ? invite.stepsCount : appointmentObj.stepsCount;
+  appointmentObj.caloriesBurned = invite.caloriesBurned !== undefined ? invite.caloriesBurned : appointmentObj.caloriesBurned;
 
-  appointmentObj.travelHours = +(
-    (invite.estimatedTravelTime || 0) / 60
-  ).toFixed(1);
+  appointmentObj.travelHours = +((invite.estimatedTravelTime || 0) / 60).toFixed(1);
 
-  if (
-    appointmentObj.participants &&
-    Array.isArray(appointmentObj.participants)
-  ) {
-    appointmentObj.participants.forEach((p) => {
+  if (appointmentObj.participants && Array.isArray(appointmentObj.participants)) {
+    appointmentObj.participants.forEach(p => {
       if (p.receiverId) {
         delete p.receiverId.passwordChangeCooldownHours;
         delete p.receiverId.emailChangeCooldownHours;
         delete p.receiverId.phoneChangeCooldownHours;
-        delete p.receiverId.id;
+        delete p.receiverId.id; 
       }
-      delete p.id;
+      delete p.id; 
       delete p.travelHours;
     });
   }
-
+  
   return appointmentObj;
 };
 
@@ -235,25 +203,16 @@ const getAppointmentSeries = async ({ appointmentId, userId }) => {
   if (!appointment.recurrenceId) {
     return [appointment];
   }
-  return await Appointment.find({
-    recurrenceId: appointment.recurrenceId,
-    userId,
-  }).sort({ arrivalTime: 1 });
+  return await Appointment.find({ recurrenceId: appointment.recurrenceId, userId }).sort({ arrivalTime: 1 });
 };
 
-const updateSingleAppointment = async ({ id, userId, data,lang }) => {
+const updateSingleAppointment = async ({ id, userId, data }) => {
   const appointment = await Appointment.findOne({ _id: id, userId });
   if (!appointment) {
     throw new AppError("No appointment found", 404, "APPOINTMENT_NOT_FOUND");
   }
 
-  const locationOrTransportChanged =
-    data.startLocation || data.destinationLocation || data.transportation;
-  const planningChanged =
-    locationOrTransportChanged ||
-    data.arrivalTime ||
-    data.arrivalBuffer !== undefined ||
-    data.preparationTime !== undefined;
+  const locationOrTransportChanged = data.startLocation || data.destinationLocation || data.transportation;
 
   Object.assign(appointment, data);
 
@@ -262,32 +221,21 @@ const updateSingleAppointment = async ({ id, userId, data,lang }) => {
   }
 
   await appointment.save();
-
-  if (planningChanged) {
-    const planningData = await planningService.calculatePlanning(
-      appointment._id,
-    );
-    await planningService.savePlanning(planningData.appointment, planningData ,true,lang);
-  }
   return appointment;
 };
 
-const updateAppointmentSeries = async ({ id, userId, data ,lang}) => {
+const updateAppointmentSeries = async ({ id, userId, data }) => {
   if (data.arrivalTime) {
     throw new AppError(
-      "You cannot update the arrival time of a whole series! Update single appointments instead.",
-      400,
-      "INVALID_SERIES_UPDATE",
+      "You cannot update the arrival time of a whole series! Update single appointments instead.", 
+      400, 
+      "INVALID_SERIES_UPDATE"
     );
   }
 
   const appointment = await Appointment.findOne({ _id: id, userId });
   if (!appointment) {
-    throw new AppError(
-      "No appointment found with that ID",
-      404,
-      "APPOINTMENT_NOT_FOUND",
-    );
+    throw new AppError("No appointment found with that ID", 404, "APPOINTMENT_NOT_FOUND");
   }
 
   if (!appointment.recurrenceId) {
