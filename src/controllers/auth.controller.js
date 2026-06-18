@@ -35,7 +35,8 @@ exports.login = catchAsync(async (req, res) => {
 exports.googleCallback = catchAsync(async (req, res) => {
   const result = await authService.googleLogin(req.user , req.lang);
 
-  //Set the JWT in an HTTP-only cookie so JavaScript can't access it
+  // Keep the cookie for same-site clients, while the fragment below supports
+  // cross-site deployments where browsers block third-party cookies.
   res.cookie('token', result.token, {
     httpOnly: true,                          
     secure: config.isProd,                   
@@ -56,8 +57,9 @@ exports.googleCallback = catchAsync(async (req, res) => {
   //   data: result,
   // });
 
-  // Redirect to the client — the cookie travels with the browser automatically
-  res.redirect(`${config.clientUrl}/auth/callback`);
+  const callbackUrl = new URL('/auth/callback', config.clientUrl);
+  callbackUrl.hash = `token=${encodeURIComponent(result.token)}`;
+  res.redirect(callbackUrl.toString());
 
 });
 
