@@ -1,7 +1,5 @@
 // We read from process.env (loaded by dotenv in server.js).
 
-const { Redirect } = require("twilio/lib/twiml/VoiceResponse");
-
 const config = {
   // Server
   port: process.env.PORT || 5000,
@@ -64,6 +62,9 @@ const config = {
   securityLockHours: parseInt(process.env.SECURITY_LOCK_HOURS) || 24,
   // Account deletion grace period (time before permanent deletion after user requests account deletion)
   deletionGraceHours: parseInt(process.env.DELETION_GRACE_HOURS) || 24,
+
+  // Resend
+  resendApiKey: process.env.RESEND_API_KEY,
   // google Maps API Key
   GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
   // ML API settings
@@ -73,7 +74,7 @@ const config = {
 
 // Make sure the critical values are set before the app starts
 const checkRequired = () => {
-  const required = ['MONGODB_URI', 'JWT_SECRET'];
+  const required = ['MONGODB_URI', 'JWT_SECRET', 'RESEND_API_KEY'];
   const missing = required.filter((key) => !process.env[key]);
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);

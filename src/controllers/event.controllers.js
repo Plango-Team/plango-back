@@ -73,7 +73,7 @@ exports.updateEvent = catchAsync(async (req, res) => {
   const { id } = req.params;
   const data = req.body;
 
-  const updatedEvent = await eventService.updateEvent({ id, companyId, data });
+  const updatedEvent = await eventService.updateEvent({ id, companyId, data, lang: req.lang });
 
   sendSuccess(res, 200, t(req.lang, "EVENT_UPDATED"), { event: updatedEvent });
 });

@@ -2,8 +2,9 @@ const Appointment = require("../models/appointmentModel");
 const AppointmentInvite = require("../models/appointmentInvite.model");
 const AppError = require("../utils/appError");
 const mongoose = require("mongoose");
+const planningService = require("./planning.service");
 
-const generateRecurringAppointments = async (data) => {
+const generateRecurringAppointments = async (data,lang) => {
   let current = new Date(data.arrivalTime);
   let end = new Date(data.repeatUntil);
   const appointments = [];
@@ -36,27 +37,41 @@ const generateRecurringAppointments = async (data) => {
     }
     current = nextDate;
   }
-const savedAppointments = await Appointment.insertMany(appointments);
-  
+  const savedAppointments = await Appointment.insertMany(appointments);
+  for (const appointment of savedAppointments) {
+    const planningData = await planningService.calculatePlanning(
+      appointment._id,
+    );
+    await planningService.savePlanning(planningData.appointment, planningData ,true,lang);
+  }
+
   const response = {
     ...savedAppointments[0].toObject(),
-    totalCount: savedAppointments.length 
+    totalCount: savedAppointments.length,
   };
 
   return response;
 };
 
-const createAppointment = async ({ data, userId }) => {
+const createAppointment = async ({ data, userId,lang }) => {
   if (!data) {
     throw new AppError("Appointment data is required", 400, "MISSING_DATA");
   }
   if (data.isRecurring) {
-    return await generateRecurringAppointments({ ...data, userId });
+    return await generateRecurringAppointments({ ...data, userId },lang);
   }
   const newAppointment = await Appointment.create({ ...data, userId });
   if (!newAppointment) {
-    throw new AppError("Failed to create appointment", 500, "APPOINTMENT_CREATION_FAILED");
+    throw new AppError(
+      "Failed to create appointment",
+      500,
+      "APPOINTMENT_CREATION_FAILED",
+    );
   }
+  const planningData = await planningService.calculatePlanning(
+    newAppointment._id,
+  );
+  await planningService.savePlanning(planningData.appointment, planningData,true,lang);
   return newAppointment;
 };
 
@@ -229,20 +244,32 @@ const updateAppointmentSeries = async ({ id, userId, data }) => {
 
   if (data.repeatUntil) {
     const newUntil = new Date(data.repeatUntil);
+    const appointmentsToDelete = await Appointment.find({
+      recurrenceId: appointment.recurrenceId,
+      userId,
+      arrivalTime: { $gt: newUntil },
+    });
+
+    for (const appt of appointmentsToDelete) {
+      await planningService.cancelPlanning(appt._id);
+    }
+
     await Appointment.deleteMany({
       recurrenceId: appointment.recurrenceId,
       userId,
-      arrivalTime: { $gt: newUntil } 
+      arrivalTime: { $gt: newUntil },
     });
   }
 
-  const locationOrTransportChanged = data.startLocation || data.destinationLocation || data.transportation;
-  
-  
+  const locationOrTransportChanged =
+    data.startLocation || data.destinationLocation || data.transportation;
+  const planningChanged =
+    locationOrTransportChanged || data.arrivalBuffer !== undefined || data.preparationTime !== undefined;
+
   if (locationOrTransportChanged) {
     Object.assign(appointment, data);
     await appointment.calculateTravelTime();
-    
+
     data.estimatedTravelTime = appointment.estimatedTravelTime;
     data.polyline = appointment.polyline;
     data.stepsCount = appointment.stepsCount;
@@ -253,8 +280,24 @@ const updateAppointmentSeries = async ({ id, userId, data }) => {
   await Appointment.updateMany(
     { recurrenceId: appointment.recurrenceId, userId },
     { $set: data },
-    { runValidators: true }
+    { runValidators: true },
   );
+
+  if (planningChanged) {
+    const appointmentsToUpdate = await Appointment.find({
+      recurrenceId: appointment.recurrenceId,
+      userId,
+    });
+    for (const appt of appointmentsToUpdate) {
+      const planningData = await planningService.calculatePlanning(appt._id);
+      await planningService.savePlanning(
+        planningData.appointment,
+        planningData,
+        true,
+        lang
+      );
+    }
+  }
 
   return { message: "Series updated successfully" };
 };
@@ -262,22 +305,40 @@ const updateAppointmentSeries = async ({ id, userId, data }) => {
 const deleteSingleAppointment = async ({ id, userId }) => {
   const appointment = await Appointment.findOneAndDelete({ _id: id, userId });
   if (!appointment) {
-    throw new AppError("No appointment found with that ID", 404, "APPOINTMENT_NOT_FOUND");
+    throw new AppError(
+      "No appointment found with that ID",
+      404,
+      "APPOINTMENT_NOT_FOUND",
+    );
   }
+  await planningService.cancelPlanning(appointment._id);
   return appointment;
 };
 
 const deleteAppointmentSeries = async ({ id, userId }) => {
   const appointment = await Appointment.findOne({ _id: id, userId });
   if (!appointment) {
-    throw new AppError("No appointment found with that ID", 404, "APPOINTMENT_NOT_FOUND");
+    throw new AppError(
+      "No appointment found with that ID",
+      404,
+      "APPOINTMENT_NOT_FOUND",
+    );
   }
 
   if (!appointment.recurrenceId) {
-    await appointment.deleteOne();
-    return { deletedCount: 1 };
+    return await deleteSingleAppointment({ id, userId });
   }
-  return await Appointment.deleteMany({ recurrenceId: appointment.recurrenceId, userId });
+  const appointmentsToDelete = await Appointment.find({
+    recurrenceId: appointment.recurrenceId,
+    userId,
+  });
+  for (const appt of appointmentsToDelete) {
+    await planningService.cancelPlanning(appt._id);
+  }
+  return await Appointment.deleteMany({
+    recurrenceId: appointment.recurrenceId,
+    userId,
+  });
 };
 
 module.exports = {

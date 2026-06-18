@@ -1,4 +1,10 @@
 require('dotenv').config();
+// const dns = require("dns");
+// dns.setDefaultResultOrder("ipv4first");
+// console.log("dns order test running");
+// dns.lookup("smtp.gmail.com", { all: true }, (err, addresses) => {
+//   console.log("SMTP DNS:", addresses);
+// });
 
 
 const app = require('./src/app');
@@ -8,6 +14,7 @@ const http = require('http');
 const { initializeSocket } = require('./src/socket');
 require('./src/jobs/redis'); // Initialize Redis connection
 require('./src/jobs/workers/notification.worker'); // Initialize notification job worker
+require('./src/jobs/workers/planning.worker'); // Initialize planning job worker
 const start = async () => {
   // Connect to MongoDB before starting the server
   await connectDB();

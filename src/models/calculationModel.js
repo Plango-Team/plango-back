@@ -28,7 +28,7 @@ const calculationSchema = new mongoose.Schema(
       required: [true, "weather conditions are required"],
       enum: ["Clear", "Cloudy", "Rain", "Storm"],
     },
-    weatherseverity: {
+    weatherSeverity: {
       type: Number,
       required: [true, "weather severity is required"],
       enum: [0, 1, 2, 3],
@@ -49,6 +49,11 @@ const calculationSchema = new mongoose.Schema(
       type: String,
       default: "V1",
     },
+    lang:{
+      type: String,
+      enum: ["en", "ar"],
+      default: "ar",
+    }
   },
   { timestamps: true }
 );

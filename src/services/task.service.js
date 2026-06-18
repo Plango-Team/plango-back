@@ -5,7 +5,6 @@ const createNotification = require("./notification.service").createNotification;
 const Notification = require("../models/notificationModel");
 const notificationQueue = require("../jobs/queues/notification.queue");
 const { t } = require("../utils/i18n");
-const { not } = require("joi");
 
 const createTask = async ({ data, userId, lang }) => {
   if (!data) {
@@ -60,9 +59,9 @@ const createTask = async ({ data, userId, lang }) => {
     );
   }
 
-  if(task.deadline){
+  if (task.deadline) {
     await createNotification({
-      recipientId: userId,
+      recipient: userId,
       type: "task_deadline",
       title: t(lang, "TASK_REMINDER"),
       message: t(lang, "TASK_DEADLINE_REMINDER_MESSAGE", { title: task.title }),
@@ -122,6 +121,9 @@ const updateTask = async ({ id, userId, data, lang }) => {
     _id: id,
     userId,
   });
+  if (!oldTask) {
+    throw new AppError(t(lang, "TASK_NOT_FOUND"), 404, "TASK_NOT_FOUND");
+  }
   const oldDeadline = oldTask.deadline?.toISOString();
 
   const task = await Task.findOneAndUpdate(
@@ -152,7 +154,7 @@ const updateTask = async ({ id, userId, data, lang }) => {
       await oldNotification.deleteOne();
     }
     await createNotification({
-      recipientId: userId,
+      recipient: userId,
       type: "task_deadline",
       title: t(lang, "TASK_REMINDER"),
       message: t(lang, "TASK_DEADLINE_REMINDER_MESSAGE", { title: task.title }),
@@ -162,12 +164,11 @@ const updateTask = async ({ id, userId, data, lang }) => {
       },
     });
   }
-    
+
   return task;
 };
 
 const deleteTask = async ({ id, userId, lang }) => {
-
   const task = await Task.findOneAndDelete({
     _id: id,
     userId,
@@ -186,7 +187,6 @@ const deleteTask = async ({ id, userId, lang }) => {
     await notificationQueue.removeNotificationJob(notification.jobId);
     await notification.deleteOne();
   }
-
 
   return task;
 };

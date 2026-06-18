@@ -8,6 +8,7 @@ const { protect, validate } = require('../middlewares');
 const {
   getMyNotificationsValidation,
   markNotificationAsReadValidation,
+  SaveFcmTokenValidation,
 } = require("../validators/notification.validator");
 
 router.use(protect);
@@ -30,6 +31,13 @@ router.patch(
   validate,
   notificationController.markNotificationAsRead
 );
+router.post(
+  "/fcm-token",
+  SaveFcmTokenValidation,
+  validate,
+  notificationController.saveFcmToken
+);
+
 
 router.get("/test", notificationController.testNotification);
 

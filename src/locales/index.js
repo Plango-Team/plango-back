@@ -2,8 +2,6 @@
 // Add a new key to BOTH languages every time you add a message.
 // Supports simple variable interpolation: "Hello {{name}}" → t(lang, 'key', { name: 'Ali' })
 
-const { t } = require("../utils/i18n");
-
 const locales = {
   en: {
     // ── Register ────────────────────────────────────────────
@@ -91,6 +89,7 @@ const locales = {
     EMAIL_SUBJECT_CHANGE_EMAIL: 'Confirm your new email address',
     EMAIL_SUBJECT_SECURITY:     'Security alert: {{action}}',
     EMAIL_SUBJECT_DELETE_ACCOUNT: 'Account deletion request',
+    EMAIL_SEND_FAILED:            'Failed to send email. Please try again.',
 
     NAME_UPDATED:              'Name updated successfully.',
     ACCOUNT_DELETED:           'Account deleted. We\'re sorry to see you go!',
@@ -136,6 +135,19 @@ const locales = {
     MISSING_DEADLINE:            'Deadline is required.',
     TASK_CREATION_FAILED:        'Failed to create task.',
     TASK_NOT_FOUND:              'Task not found.',
+
+    POST_CREATION_FAILED:        'Failed to create post.',
+    POST_NOT_FOUND:              'Post not found.',
+    POSTS_RETRIEVED:             'Posts retrieved successfully.',
+    POST_CREATED:               'Post created successfully.',
+    POST_UPDATED:               'Post updated successfully.',
+    POST_DELETED:               'Post deleted successfully.',
+
+    APPOINTMENT_NOT_FOUND:        'appointment not found.',
+    CHAT_ACCESS_DENIED:            'You do not have access to this chat.',
+    APPOINTMENT_CREATED:      'Appointment created successfully.',
+    EVENT_UPDATED:             'Event updated successfuly',
+    INVITIATION_SENT:            'Invitation sent successfully.',
 
   },
 
@@ -221,6 +233,7 @@ const locales = {
     EMAIL_SUBJECT_CHANGE_EMAIL: 'تأكيد بريدك الإلكتروني الجديد',
     EMAIL_SUBJECT_SECURITY:     'تنبيه أمني: {{action}}',
     EMAIL_SUBJECT_DELETE_ACCOUNT: 'طلب حذف الحساب',
+    EMAIL_SEND_FAILED:            'فشل في إرسال البريد الإلكتروني. يرجى المحاولة مرة أخرى.',
     
     NAME_UPDATED:              'تم تحديث الاسم بنجاح.',
     ACCOUNT_DELETED:           'تم حذف الحساب. نأسف لرؤيتك ترحل!',
@@ -265,6 +278,19 @@ const locales = {
     EXPIRED_APPOINTMENT:          'الموعد المرتبط قد حدث بالفعل.',
     TASK_CREATION_FAILED:        'فشل في إنشاء المهمة.',
     TASK_NOT_FOUND:              'المهمة غير موجودة.',
+
+    POST_CREATION_FAILED:        'فشل في إنشاء المنشور.',
+    POST_NOT_FOUND:              'المنشور غير موجود.',
+    POSTS_RETRIEVED:             'تم استرجاع المنشورات بنجاح.',
+    POST_CREATED:               'تم إنشاء المنشور بنجاح.',
+    POST_UPDATED:               'تم تحديث المنشور بنجاح.',
+    POST_DELETED:               'تم حذف المنشور بنجاح.',
+
+    APPOINTMENT_NOT_FOUND:        'الموعد غير موجود.',
+    CHAT_ACCESS_DENIED:            'ليس لديك صلاحية الوصول إلى هذه المحادثة.',
+    APPOINTMENT_CREATED:      'تم إنشاء الموعد بنجاح.',
+    EVENT_UPDATED:             'تم تحديث الحدث بنجاح.',
+    INVITIATION_SENT:            'تم إرسال الدعوة بنجاح.',
   },
 };
 

@@ -35,7 +35,7 @@ const taskSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Appointment",
   },
-  owner : {
+  userId : {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: [true, "task should have an owner"],

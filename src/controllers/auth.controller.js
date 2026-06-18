@@ -116,7 +116,7 @@ exports.requestEmailChange = catchAsync(async (req, res) => {
 });
 
 exports.confirmEmailChange = catchAsync(async (req, res) => {
-  await authService.confirmEmailChange(req.body.token , req.lang);
+  await authService.confirmEmailChange(req.query.token , req.lang);
   sendSuccess(res, 200, t(req.lang, 'EMAIL_CHANGE_SUCCESS'));
 });
 
