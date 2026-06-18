@@ -231,7 +231,19 @@ const errorHandler = (err, req, res, next) => {
 
   // Handle Mongoose duplicate key error (e.g. duplicate email)
   if (err.code === 11000) {
-    const field = Object.keys(err.keyValue || {})[0] || 'field';
+    const keys = Object.keys(err.keyValue || {});
+    if (keys.includes('title') && keys.includes('companyId') && keys.includes('startDate')) {
+      return res.status(409).json({status: 'fail', message: "هذا الإيفنت موجود مسبقاً." , code: 'DUPLICATE_EVENT'});
+  }
+  if (keys.includes('userId') && keys.includes('arrivalTime')) {
+    return res.status(409).json({ 
+      status: 'fail', 
+      message: "عذراً، لديك بالفعل موعد محجوز في هذا التوقيت." ,
+      code: 'DUPLICATE_APPOINTMENT'
+    });
+  }
+
+    const field = keys[0] || 'field';
     return res.status(409).json({
       status: 'fail',
       message: t(req.lang, 'DUPLICATE_FIELD', { field }),

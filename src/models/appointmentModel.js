@@ -62,9 +62,9 @@ const appointmentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       index: true,
     },
-    startedTrip: {
-      type: Boolean,
-      default: false,
+    startedAt: {
+      type: Date,
+      default: null,
     },
     polyline: { type: String },
     stepsCount: { type: Number, default: null },
