@@ -39,7 +39,7 @@ app.use(helmet());
 
 // ── CORS ──────────────────────────────────────────────────
 app.use(cors({
-  origin: config.clientUrl,
+  origin: [config.clientUrl,"http://localhost:4200"],
   credentials: true,
 }));
 
