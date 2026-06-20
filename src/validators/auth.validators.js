@@ -13,7 +13,7 @@ const bioField = body('bio')
 
 
 const usernameField = (field = 'username') =>
-  body(field)
+  query(field)
   .trim()
   .notEmpty().withMessage('Username is required')
   .isLength({ min: 4, max: 30 }).withMessage('Username must be 4–30 characters')
