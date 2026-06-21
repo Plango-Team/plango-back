@@ -78,7 +78,6 @@ module.exports = {
     bioField,
     emailField(),
     passwordField(),
-    usernameField(),
     phoneField('phone').optional({ checkFalsy: true }),
     body('role').optional().isIn(['user', 'org', 'admin']).withMessage('Invalid role'),
   ],
