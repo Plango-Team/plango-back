@@ -137,7 +137,7 @@ const resendVerification = async (email, lang) => {
 // Log in with email + password
 const login = async ({ email, password } , lang) => {
   // Fetch user with password (hidden by default)
-  const user = await User.findOne({ email }).select(PRIVATE_FIELDS);
+  const user = await User.findOne({ email:email.toLowerCase() ,isActive: true }).select(PRIVATE_FIELDS);
 
   // Always run comparePassword even if user is null — prevents timing attacks
   const passwordMatch = user ? await user.comparePassword(password) : false;
